@@ -18,4 +18,8 @@ class DataSource < ApplicationRecord
     else {}
     end
   end
+
+  def adapter
+    adapter_class.constantize.new(config_hash)
+  end
 end
