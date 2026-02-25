@@ -1,5 +1,10 @@
 require "simplecov"
-SimpleCov.start "rails"
+SimpleCov.start "rails" do
+  enable_coverage :branch
+  primary_coverage :line
+  # Give each parallel worker a unique command name so results are merged
+  command_name "Rails Tests"
+end
 
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
@@ -10,6 +15,15 @@ module ActiveSupport
   class TestCase
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
+
+    # Merge SimpleCov results across parallel workers
+    parallelize_setup do |worker|
+      SimpleCov.command_name "#{SimpleCov.command_name} (worker #{worker})"
+    end
+
+    parallelize_teardown do |_worker|
+      SimpleCov.result
+    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

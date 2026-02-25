@@ -122,4 +122,24 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
     client = PublicContracts::EU::TedClient.new("api_key" => "test-key")
     assert_instance_of PublicContracts::EU::TedClient, client
   end
+
+  test "rails_log falls back to warn when Rails logger is nil" do
+    original_logger = Rails.logger
+    Rails.logger = nil
+    warning_issued = false
+    raising_mock = Object.new
+    raising_mock.define_singleton_method(:use_ssl=)      { |_| }
+    raising_mock.define_singleton_method(:open_timeout=) { |_| }
+    raising_mock.define_singleton_method(:read_timeout=) { |_| }
+    raising_mock.define_singleton_method(:request)       { |_| raise StandardError, "no logger test" }
+    @client.stub(:warn, ->(_msg) { warning_issued = true }) do
+      Net::HTTP.stub(:new, raising_mock) do
+        result = @client.search(query: "test")
+        assert_nil result
+      end
+    end
+    assert warning_issued, "expected warn to be called when Rails.logger is nil"
+  ensure
+    Rails.logger = original_logger
+  end
 end

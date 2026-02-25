@@ -80,6 +80,30 @@ module RegistoComercialFixtures
     </body></html>
   HTML
 
+  # GridView fallback: no <table> in document, but GridView-id div contains
+  # tr elements (non-standard HTML that Nokogiri handles), triggering the
+  # GridView fallback path in extrair_resultados.
+  GRIDVIEW_FALLBACK_HTML = <<~HTML
+    <html><body>
+      <div id="GridView1">
+        <tr>
+          <td>509999002</td><td>Grid Empresa</td><td>2024-03-01</td><td>Avisos</td>
+          <td><a href="/DetalhePublicacao.aspx?id=789">Ver</a></td>
+        </tr>
+      </div>
+    </body></html>
+  HTML
+
+  DETAIL_EXTENDED_HTML = <<~HTML
+    <html><body>
+      <table>
+        <tr><td>Distrito</td><td>Porto</td></tr>
+        <tr><td>Concelho</td><td>Matosinhos</td></tr>
+        <tr><td>Objecto</td><td>Prestação de serviços</td></tr>
+      </table>
+    </body></html>
+  HTML
+
   CORPO_FALLBACK_HTML = <<~HTML
     <html><body>
       <p>short</p>

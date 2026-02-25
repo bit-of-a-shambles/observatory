@@ -74,4 +74,20 @@ class DataSourceTest < ActiveSupport::TestCase
     ds = data_sources(:portal_base)
     assert_respond_to ds, :contracts
   end
+
+  test "config_hash returns empty hash for malformed JSON string" do
+    ds = DataSource.new(config: "not-valid-json{{{")
+    assert_equal({}, ds.config_hash)
+  end
+
+  test "adapter instantiates the adapter_class with config_hash" do
+    ds = DataSource.new(
+      country_code:  "PT",
+      name:          "Portal BASE",
+      source_type:   "api",
+      adapter_class: "PublicContracts::PT::PortalBaseClient"
+    )
+    adapter = ds.adapter
+    assert_instance_of PublicContracts::PT::PortalBaseClient, adapter
+  end
 end

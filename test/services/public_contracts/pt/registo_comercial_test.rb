@@ -174,4 +174,206 @@ class PublicContracts::PT::RegistoComercialTest < ActiveSupport::TestCase
   test "obter_detalhe returns nil for non-http link" do
     assert_nil @rc.obter_detalhe("javascript:void(0)")
   end
+
+  # ── obter_detalhe body ────────────────────────────────────────────────────
+  test "obter_detalhe fetches and parses detail HTML" do
+    @rc.stub(:obter_pagina, DETAIL_HTML) do
+      detalhe = @rc.obter_detalhe("http://publicacoes.mj.pt/Detalhe.aspx?id=1")
+      assert_equal "509999001", detalhe[:nipc]
+    end
+  end
+
+  # ── pesquisar_por_nome body ───────────────────────────────────────────────
+  test "pesquisar_por_nome delegates to pesquisar with nome" do
+    @rc.stub(:pesquisar, [{ nipc: "123456789", entidade: "Empresa Teste" }]) do
+      result = @rc.pesquisar_por_nome("Empresa Teste")
+      assert_equal 1, result.size
+    end
+  end
+
+  # ── investigar ────────────────────────────────────────────────────────────
+  test "investigar returns publications with details for http links" do
+    pub_with_link    = { nipc: "123456789", resumo: "Test Pub",   ligacao: "http://example.com/Detalhe" }
+    pub_without_link = { nipc: "123456789", resumo: "Other Pub",  ligacao: nil }
+    pubs = [pub_with_link, pub_without_link]
+    detalhe = { entidade: "Test Empresa", nipc: "123456789" }
+    @rc.stub(:pesquisar_por_nipc, pubs) do
+      @rc.stub(:obter_detalhe, detalhe) do
+        result = @rc.investigar("123456789")
+        assert_equal 2, result.size
+        assert_equal detalhe, result.first[:detalhe]
+        assert_nil result.last[:detalhe]
+      end
+    end
+  end
+
+  # ── dormir ────────────────────────────────────────────────────────────────
+  test "dormir sleeps when pausa is positive" do
+    rc = PublicContracts::PT::RegistoComercial.new(pausa: 1)
+    sleep_called = false
+    rc.stub(:sleep, ->(_n) { sleep_called = true }) do
+      rc.send(:dormir)
+    end
+    assert sleep_called, "expected sleep to be called when pausa > 0"
+  end
+
+  # ── guardar_biscoitos / montar_biscoitos ──────────────────────────────────
+  test "guardar_biscoitos stores cookies from Set-Cookie headers" do
+    rc = PublicContracts::PT::RegistoComercial.new(pausa: 0)
+    fake_resp = Object.new
+    fake_resp.define_singleton_method(:get_fields) { |_| ["session=abc123; Path=/", "token=xyz; HttpOnly"] }
+    rc.send(:guardar_biscoitos, fake_resp)
+    cookies = rc.send(:montar_biscoitos)
+    assert_includes cookies, "session=abc123"
+    assert_includes cookies, "token=xyz"
+  end
+
+  test "montar_biscoitos returns empty string when no cookies" do
+    rc = PublicContracts::PT::RegistoComercial.new(pausa: 0)
+    assert_equal "", rc.send(:montar_biscoitos)
+  end
+
+  # ── enviar_formulario redirect ────────────────────────────────────────────
+  test "enviar_formulario follows HTTP redirect" do
+    redirect_resp = Object.new
+    redirect_resp.define_singleton_method(:is_a?) { |klass| klass == Net::HTTPRedirection }
+    redirect_resp.define_singleton_method(:[]) { |_key| "/pesquisa_resultado.aspx" }
+
+    final_html = "<html><body>resultado</body></html>"
+    fake_http = Object.new
+    fake_http.define_singleton_method(:use_ssl=)      { |_| }
+    fake_http.define_singleton_method(:open_timeout=) { |_| }
+    fake_http.define_singleton_method(:read_timeout=) { |_| }
+    fake_http.define_singleton_method(:request)       { |_| redirect_resp }
+
+    Net::HTTP.stub(:new, fake_http) do
+      @rc.stub(:guardar_biscoitos, nil) do
+        @rc.stub(:obter_pagina, final_html) do
+          result = @rc.send(:enviar_formulario, "https://publicacoes.mj.pt/pesquisa.aspx", {})
+          assert_equal final_html, result
+        end
+      end
+    end
+  end
+
+  # ── extrair_resultados GridView fallback ─────────────────────────────────
+  test "extrair_resultados GridView fallback picks up rows with GridView id" do
+    results = @rc.send(:extrair_resultados, GRIDVIEW_FALLBACK_HTML)
+    assert results.size >= 1
+    assert results.any? { |r| r[:nipc] == "509999002" }
+  end
+
+  # ── extrair_detalhe distrito, concelho and objecto ───────────────────────
+  test "extrair_detalhe parses distrito, concelho, and objecto fields" do
+    detalhe = @rc.send(:extrair_detalhe, DETAIL_EXTENDED_HTML)
+    assert_equal "Porto",                  detalhe[:distrito]
+    assert_equal "Matosinhos",             detalhe[:concelho]
+    assert_equal "Prestação de serviços",  detalhe[:objecto]
+  end
+
+  # ── ConsultaEmLote ────────────────────────────────────────────────────────
+  test "ConsultaEmLote initializes with lista_nipc" do
+    lote = PublicContracts::PT::ConsultaEmLote.new(lista_nipc: ["123456789"])
+    assert_instance_of PublicContracts::PT::ConsultaEmLote, lote
+  end
+
+  test "ConsultaEmLote executar gathers publications and writes JSON" do
+    require "tempfile"
+    lote = PublicContracts::PT::ConsultaEmLote.new(lista_nipc: ["509999001"])
+    pubs = [{ ligacao: "http://example.com/Detalhe", entidade: "Test Empresa" }]
+    detalhe = { socios: ["Ana Silva"], gerentes: [], capital_social: "10.000 EUR", sede: "Lisboa", natureza_juridica: "Lda" }
+    outfile = Tempfile.new(["resultados", ".json"])
+    outfile.close
+    lote.instance_variable_get(:@rc).stub(:pesquisar_por_nipc, pubs) do
+      lote.instance_variable_get(:@rc).stub(:obter_detalhe, detalhe) do
+        result = lote.executar(ficheiro_saida: outfile.path)
+        assert result.key?("509999001")
+        assert_equal ["Ana Silva"], result["509999001"][:socios]
+      end
+    end
+  ensure
+    outfile&.unlink
+  end
+
+  test "ConsultaEmLote carregar_csv loads NIPCs from CSV file" do
+    require "tempfile"
+    csv_content = "NIPC Adjudicatário,Valor\n509999001,1000\n509999002,2000\ninvalid,0\n"
+    csv_file = Tempfile.new(["base", ".csv"])
+    csv_file.write(csv_content)
+    csv_file.close
+    lote = PublicContracts::PT::ConsultaEmLote.new(ficheiro_csv: csv_file.path)
+    nipcs = lote.instance_variable_get(:@nipcs)
+    assert_includes nipcs, "509999001"
+    assert_includes nipcs, "509999002"
+    refute_includes nipcs, "invalid"
+  ensure
+    csv_file&.unlink
+  end
+
+  test "ConsultaEmLote executar handles errors gracefully" do
+    lote = PublicContracts::PT::ConsultaEmLote.new(lista_nipc: ["000000000"])
+    lote.instance_variable_get(:@rc).stub(:pesquisar_por_nipc, ->(_nipc) { raise StandardError, "network error" }) do
+      require "tempfile"
+      outfile = Tempfile.new(["resultados", ".json"])
+      outfile.close
+      result = lote.executar(ficheiro_saida: outfile.path)
+      assert_equal({}, result)
+    ensure
+      outfile&.unlink
+    end
+  end
+
+  # ── Cruzamento ────────────────────────────────────────────────────────────
+  test "Cruzamento detectar_ligacoes finds people shared across entities" do
+    require "tempfile"
+    registo = {
+      "123456789" => { socios: ["João Silva"], gerentes: [], entidade: "Empresa A" },
+      "987654321" => { socios: ["João Silva"], gerentes: [], entidade: "Empresa B" }
+    }.to_json
+    base_csv = "nipc,valor\n123456789,100\n"
+
+    base_f    = Tempfile.new(["base", ".csv"])
+    registo_f = Tempfile.new(["registo", ".json"])
+    base_f.write(base_csv)
+    registo_f.write(registo)
+    base_f.close
+    registo_f.close
+
+    cruz = PublicContracts::PT::Cruzamento.new(
+      ficheiro_base:    base_f.path,
+      ficheiro_registo: registo_f.path
+    )
+    alertas = cruz.detectar_ligacoes
+    assert alertas.size >= 1
+    pessoa = alertas.find { |a| a[:pessoa].include?("silva") || a[:pessoa].include?("João") || a[:pessoa].include?("joao") }
+    assert_not_nil pessoa
+  ensure
+    base_f&.unlink
+    registo_f&.unlink
+  end
+
+  test "Cruzamento detectar_ligacoes returns empty when no shared persons" do
+    require "tempfile"
+    registo = {
+      "123456789" => { socios: ["Ana Lopes"], gerentes: [], entidade: "Empresa A" },
+      "987654321" => { socios: ["Pedro Costa"], gerentes: [], entidade: "Empresa B" }
+    }.to_json
+    base_csv = "nipc,valor\n123456789,100\n"
+
+    base_f    = Tempfile.new(["base2", ".csv"])
+    registo_f = Tempfile.new(["registo2", ".json"])
+    base_f.write(base_csv)
+    registo_f.write(registo)
+    base_f.close
+    registo_f.close
+
+    cruz = PublicContracts::PT::Cruzamento.new(
+      ficheiro_base:    base_f.path,
+      ficheiro_registo: registo_f.path
+    )
+    assert_equal [], cruz.detectar_ligacoes
+  ensure
+    base_f&.unlink
+    registo_f&.unlink
+  end
 end

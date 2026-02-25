@@ -11,6 +11,7 @@ RegistoComercial = PublicContracts::PT::RegistoComercial unless defined?(Registo
 ConsultaEmLote   = PublicContracts::PT::ConsultaEmLote   unless defined?(ConsultaEmLote)
 Cruzamento       = PublicContracts::PT::Cruzamento       unless defined?(Cruzamento)
 
+# :nocov:
 if __FILE__ == $PROGRAM_NAME
   if ARGV.empty?
     puts <<~AJUDA
@@ -87,3 +88,4 @@ if __FILE__ == $PROGRAM_NAME
     end
   end
 end
+# :nocov:
