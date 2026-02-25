@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+
 #
 # CLI shim — loads the namespaced class and re-exports as top-level constants
 # for backward-compatible standalone use:

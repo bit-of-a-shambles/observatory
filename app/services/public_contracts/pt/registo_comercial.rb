@@ -189,12 +189,12 @@ module PublicContracts
         ligacao = nil
         if ligacao_el
           href = ligacao_el["href"].to_s
-          ligacao = if href.include?("javascript:__doPostBack")
-                      :postback
-                    else
-                      href = "https://#{DOMINIO}/#{href}" unless href.start_with?("http")
-                      href
-                    end
+          if href.include?("javascript:__doPostBack")
+            ligacao = :postback
+          else
+            href = "https://#{DOMINIO}/#{href}" unless href.start_with?("http")
+            ligacao = href
+          end
         end
         {
           nipc:     textos[0],
