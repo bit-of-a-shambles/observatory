@@ -1,4 +1,4 @@
-# Observatório de Integridade
+# Integrity Observatory
 
 A Rails 8 application that monitors public procurement data across multiple countries to detect corruption risk, abuse patterns, and conflicts of interest. Built for journalists, auditors, and civic watchdogs.
 
@@ -21,7 +21,7 @@ Adding a new country requires only an adapter class and a database record — no
 ## Stack
 
 - Ruby 3.3.0 / Rails 8
-- SQLite (development), upgradeable to PostgreSQL
+- SQLite
 - Hotwire + Tailwind CSS (cyberpunk-noir UI)
 - Minitest + SimpleCov (100% line coverage)
 
@@ -58,29 +58,74 @@ Data sources are DB-driven: each `DataSource` record specifies a `country_code`,
 3. Insert a `DataSource` record pointing to your adapter class.
 4. Run `ImportService.new(data_source).call` to ingest.
 
-## Red Flag Catalogue
+## How Scoring Works
 
-See `AGENTS.md` for the full indicator catalogue. Priority flags:
+The system uses a **three-layer architecture** to turn raw procurement data into actionable intelligence.
 
-1. Repeat direct awards / prior consultations to the same supplier
-2. Late publication or execution before publication date
-3. Amendment inflation and repeated deadline extensions
-4. Supplier concentration by contracting authority and CPV code
-5. Price anomalies within same CPV and region
-6. Abnormal use of exceptional-procedure types
-7. Supplier overlap with AdC (Competition Authority) sanction cases
-8. Data quality evasion — missing NIFs, dates, identifiers
+### Layer 1 — Procurement spine
+
+Every contract is normalised into a common structure regardless of source country: authority, supplier NIF, procedure type, CPV code, prices, dates, amendment history. This is the foundation everything else is built on.
+
+### Layer 2 — External corroboration
+
+The spine is enriched with cross-source data:
+- **TED** — cross-checks publication consistency for EU-threshold tenders
+- **AdC** — matches supplier NIFs against Portuguese Competition Authority sanction cases
+- **Entidade Transparência** — links contract parties to persons in public roles, surfacing potential conflicts of interest
+- **Mais Transparência / Portugal2020** — flags EU-funded contracts for priority scrutiny
+
+### Layer 3 — Two-track scoring
+
+A single composite score is not enough — it obscures reasoning and is hard to audit. Instead the system runs two parallel tracks:
+
+**Track A: Rule-based red flags** — deterministic, fully explainable, ready for media use.
+
+Each flag has a clear definition and can be cited directly in a story or referral:
+
+| Flag | Signal |
+|---|---|
+| Repeat direct awards to same supplier | Same authority → same supplier, ≥ 3 direct awards within 36 months |
+| Execution before publication | `celebration_date` earlier than `publication_date` in BASE |
+| Amendment inflation | Amendment value > 20% of original contract price |
+| Threshold splitting | Contract value within 5% below a procedural threshold |
+| Buyer above peer median for direct awards | Authority uses direct award far more than peers for same CPV |
+| Long execution | Contract duration > 3 years |
+| Price-to-estimate anomaly | `total_effective_price` / `base_price` outside expected range |
+
+**Track B: Pattern-based anomaly flags** — statistical, for cases no single rule can catch.
+
+| Flag | Signal |
+|---|---|
+| Supplier concentration | One supplier holds disproportionate share of a buyer's spend by CPV |
+| Bid rotation | Set of suppliers who appear together but rarely compete |
+| Pricing outlier | Contract price > 2σ from CPV × region × year distribution |
+| Procedural shift | Sudden increase in exceptional procedures near fiscal year end |
+
+Every flagged case is tagged with its **evidence fields**, a **data completeness score**, and an explicit **confidence level** (low / medium / high) — so weak data never produces overconfident conclusions. Missingness is itself a signal: missing NIFs, impossible date sequences, and incomplete mandatory fields are scored as data-quality red flags.
+
+See `AGENTS.md` for the full indicator catalogue with OECD and OCP methodology references.
+
+## Roadmap
+
+| Phase | Status | Scope |
+|---|---|---|
+| **1 — Procurement spine** | ✅ Done | BASE ingestion pipeline, multi-country adapter framework, domain model, 100% test coverage |
+| **2 — Rule-based dashboard** | 🔜 Next | Track A red flags implemented as DB queries, dashboard with severity filter and case drill-down |
+| **3 — External enrichment** | Planned | TED cross-checking, AdC sanction matching, Entidade Transparência conflict-of-interest layer |
+| **4 — Pattern scoring** | Planned | Track B statistical indicators: concentration index, pricing outliers, bid rotation detection |
+| **5 — Case triage** | Planned | Confidence scoring, evidence trail per case, export for referral to TdC / AdC / MENAC |
+| **6 — Ownership layer** | Constrained | RCBE beneficial ownership linkage — access limited by CJEU ruling; treat as best-effort |
 
 ## Escalation Routes (Portugal)
 
 | Issue type | Route |
 |---|---|
-| Financial irregularity, unlawful spending | Tribunal de Contas complaints channel |
+| Financial irregularity, unlawful spending | Tribunal de Contas complaints channel (anonymous accepted) |
 | Cartel / bid rigging | Autoridade da Concorrência |
 | General corruption / whistleblowing | MENAC reporting channel |
 
 ## Docs
 
-- `AGENTS.md` — domain model, data sources, indicator catalogue, coding standards
+- `AGENTS.md` — domain model, data sources, full indicator catalogue, coding standards
 - `DESIGN.md` — UI/UX design system
-- `docs/plans/` — implementation plans
+- `docs/plans/` — implementation plans and research blueprints
