@@ -1,0 +1,15 @@
+portal_base:
+  country_code: PT
+  name: Portal BASE
+  source_type: api
+  adapter_class: PublicContracts::PT::PortalBaseClient
+  status: active
+  record_count: 0
+
+ted_pt:
+  country_code: PT
+  name: "TED — PT"
+  source_type: api
+  adapter_class: PublicContracts::EU::TedClient
+  status: inactive
+  record_count: 0

@@ -1,6 +1,7 @@
 one:
   external_id: "contract-001"
   contracting_entity: one
+  data_source: portal_base
   country_code: PT
   object: Fornecimento de material de escritório
   contract_type: Aquisição de Bens
@@ -15,6 +16,7 @@ one:
 two:
   external_id: "contract-002"
   contracting_entity: one
+  data_source: portal_base
   country_code: PT
   object: Serviços de limpeza
   contract_type: Aquisição de Serviços
