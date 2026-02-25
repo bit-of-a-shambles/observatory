@@ -27,6 +27,7 @@ The approach is **risk scoring, not accusation**. The system surfaces cases for 
 | **dados.gov.pt** | Open data platform, includes BASE mirrors | Use for bulk OCDS downloads |
 | **TED** | EU-level procurement notices | Valuable for contracts at EU thresholds and cross-checking publication consistency |
 | **Registo Comercial** | Company registrations, shareholders, management | Scraped from publicacoes.mj.pt |
+| **Entidade Transparência** | Public entities, mandates, persons in public roles | https://entidadetransparencia.pt/ — useful for conflict-of-interest checks |
 | **RCBE** | Beneficial ownership register | Access requires authentication by legal person number; CJEU ruling limited open access — treat as a constrained layer |
 | **AdC** | Competition Authority — cartel cases, sanctions | Cross-reference supplier NIFs against published AdC cases |
 | **Tribunal de Contas** | Audit reports, financial liability decisions | Used to corroborate red flags |
