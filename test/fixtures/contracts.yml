@@ -1,7 +1,7 @@
-# test/fixtures/contracts.yml
 one:
   external_id: "contract-001"
   contracting_entity: one
+  country_code: PT
   object: Fornecimento de material de escritório
   contract_type: Aquisição de Bens
   procedure_type: Ajuste Direto
@@ -15,6 +15,7 @@ one:
 two:
   external_id: "contract-002"
   contracting_entity: one
+  country_code: PT
   object: Serviços de limpeza
   contract_type: Aquisição de Serviços
   procedure_type: Ajuste Direto

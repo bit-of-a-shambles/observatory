@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_25_143204) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_25_143340) do
   create_table "contract_winners", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.integer "entity_id", null: false
@@ -35,7 +35,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_143204) do
     t.string "location"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "country_code", default: "PT", null: false
+    t.integer "data_source_id"
     t.index ["contracting_entity_id"], name: "index_contracts_on_contracting_entity_id"
+    t.index ["data_source_id"], name: "index_contracts_on_data_source_id"
     t.index ["external_id"], name: "index_contracts_on_external_id", unique: true
   end
 
@@ -64,10 +67,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_143204) do
     t.string "locality"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["tax_identifier"], name: "index_entities_on_tax_identifier"
+    t.string "country_code", default: "PT", null: false
+    t.index ["tax_identifier", "country_code"], name: "index_entities_on_tax_identifier_and_country_code", unique: true
   end
 
   add_foreign_key "contract_winners", "contracts"
   add_foreign_key "contract_winners", "entities"
+  add_foreign_key "contracts", "data_sources"
   add_foreign_key "contracts", "entities", column: "contracting_entity_id"
 end
