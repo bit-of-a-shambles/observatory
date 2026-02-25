@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+# :nocov:
 #
 # CLI shim — loads the namespaced class and re-exports as top-level constants
 # for backward-compatible standalone use:
@@ -8,7 +9,6 @@
 #
 require_relative "pt/registo_comercial"
 
-# :nocov:
 if __FILE__ == $PROGRAM_NAME
   RegistoComercial = PublicContracts::PT::RegistoComercial
   ConsultaEmLote   = PublicContracts::PT::ConsultaEmLote
