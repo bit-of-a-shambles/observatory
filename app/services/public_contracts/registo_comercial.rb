@@ -8,12 +8,12 @@
 #
 require_relative "pt/registo_comercial"
 
-RegistoComercial = PublicContracts::PT::RegistoComercial unless defined?(RegistoComercial)
-ConsultaEmLote   = PublicContracts::PT::ConsultaEmLote   unless defined?(ConsultaEmLote)
-Cruzamento       = PublicContracts::PT::Cruzamento       unless defined?(Cruzamento)
-
 # :nocov:
 if __FILE__ == $PROGRAM_NAME
+  RegistoComercial = PublicContracts::PT::RegistoComercial
+  ConsultaEmLote   = PublicContracts::PT::ConsultaEmLote
+  Cruzamento       = PublicContracts::PT::Cruzamento
+
   if ARGV.empty?
     puts <<~AJUDA
       ╔══════════════════════════════════════════════════════╗

@@ -20,7 +20,8 @@ module PublicContracts
       ].freeze
 
       def initialize(config = {})
-        @api_key = config.fetch("api_key", ENV["TED_API_KEY"])
+        @api_key      = config.fetch("api_key", ENV["TED_API_KEY"])
+        @country_code = config.fetch("country_code", "PRT")  # ISO 3166-1 alpha-3 for EQL queries
       end
 
       def country_code = "EU"
@@ -42,7 +43,7 @@ module PublicContracts
       end
 
       def fetch_contracts(page: 1, limit: 50)
-        result = search(query: "organisation-country-buyer=PRT", page: page, limit: limit)
+        result = search(query: "organisation-country-buyer=#{@country_code}", page: page, limit: limit)
         Array(result&.dig("notices"))
       end
 

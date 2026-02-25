@@ -23,16 +23,27 @@ class ContractTest < ActiveSupport::TestCase
     assert_not contract.valid?
   end
 
-  test "external_id must be unique" do
+  test "external_id must be unique within country" do
     existing = contracts(:one)
     dup = Contract.new(
       external_id:        existing.external_id,
+      country_code:       existing.country_code,
       object:             "Another",
-      country_code:       "PT",
       contracting_entity: entities(:one)
     )
     assert_not dup.valid?
     assert_includes dup.errors[:external_id], "has already been taken"
+  end
+
+  test "same external_id allowed in different countries" do
+    existing = contracts(:one)
+    other = Contract.new(
+      external_id:        existing.external_id,
+      country_code:       "ES",
+      object:             "Spanish contract",
+      contracting_entity: entities(:one)
+    )
+    assert other.valid?
   end
 
   test "belongs to contracting_entity" do

@@ -90,4 +90,26 @@ class DataSourceTest < ActiveSupport::TestCase
     adapter = ds.adapter
     assert_instance_of PublicContracts::PT::PortalBaseClient, adapter
   end
+
+  test "adapter raises for class outside PublicContracts namespace" do
+    ds = DataSource.new(adapter_class: "File")
+    assert_raises(ArgumentError) { ds.adapter }
+  end
+
+  test "adapter raises for class without fetch_contracts" do
+    ds = DataSource.new(adapter_class: "PublicContracts::BaseClient")
+    assert_raises(ArgumentError) { ds.adapter }
+  end
+
+  test "adapter instantiates a valid adapter class" do
+    ds = data_sources(:portal_base)
+    adapter = ds.adapter
+    assert_respond_to adapter, :fetch_contracts
+  end
+
+  test "invalid with non-alpha2 country_code" do
+    ds = DataSource.new(country_code: "PRT", name: "X", source_type: "api", adapter_class: "PublicContracts::PT::PortalBaseClient")
+    assert_not ds.valid?
+    assert_includes ds.errors[:country_code], "must be a 2-letter ISO 3166-1 alpha-2 code (e.g. PT, ES)"
+  end
 end

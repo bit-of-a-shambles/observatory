@@ -26,7 +26,8 @@ module PublicContracts
       return unless contracting
 
       contract = Contract.find_or_create_by!(
-        external_id: attrs["external_id"]
+        external_id:  attrs["external_id"],
+        country_code: attrs["country_code"] || @ds.country_code
       ) do |c|
         c.object               = attrs["object"]
         c.country_code         = attrs["country_code"] || @ds.country_code

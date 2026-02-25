@@ -11,5 +11,6 @@ ted_pt:
   name: "TED — PT"
   source_type: api
   adapter_class: PublicContracts::EU::TedClient
+  config: '{"country_code":"PRT"}'
   status: inactive
   record_count: 0

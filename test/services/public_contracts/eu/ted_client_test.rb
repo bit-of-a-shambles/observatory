@@ -123,6 +123,16 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
     assert_instance_of PublicContracts::EU::TedClient, client
   end
 
+  test "fetch_contracts uses configured country_code" do
+    client = PublicContracts::EU::TedClient.new("country_code" => "ESP")
+    mock = mock_http_post(fake_success(NOTICES_PAYLOAD.to_json))
+    Net::HTTP.stub(:new, mock) do
+      result = client.fetch_contracts
+      assert_equal NOTICES_PAYLOAD["notices"], result
+    end
+    mock.verify
+  end
+
   test "rails_log falls back to warn when Rails logger is nil" do
     original_logger = Rails.logger
     Rails.logger = nil
