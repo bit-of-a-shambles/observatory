@@ -4,8 +4,7 @@ pt:
     tagline: "Cruzamento automatizado de bases de dados públicas portuguesas para deteção de irregularidades"
     live: "AO VIVO"
     prototype: "Protótipo · Rails 8 + Hotwire"
-    footer_title: "OBSERVATÓRIO DE INTEGRIDADE · PROTÓTIPO · RAILS 8 + HOTWIRE"
-    footer_sources: "Fontes reais: Portal BASE · ECFP/CNE · Registo Comercial · RCBE · Tribunal de Contas · DGAL"
+    footer_repo: "Open source — contribuir no GitHub"
 
   nav:
     contracts: "Contratos"

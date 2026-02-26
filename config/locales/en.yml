@@ -4,8 +4,7 @@ en:
     tagline: "Automated cross-referencing of Portuguese public databases to detect irregularities"
     live: "LIVE"
     prototype: "Prototype · Rails 8 + Hotwire"
-    footer_title: "OBSERVATÓRIO DE INTEGRIDADE · PROTOTYPE · RAILS 8 + HOTWIRE"
-    footer_sources: "Real sources: Portal BASE · ECFP/CNE · Registo Comercial · RCBE · Tribunal de Contas · DGAL"
+    footer_repo: "Open source — contribute on GitHub"
 
   nav:
     contracts: "Contracts"
