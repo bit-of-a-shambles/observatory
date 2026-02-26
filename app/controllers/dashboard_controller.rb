@@ -3,10 +3,10 @@ class DashboardController < ApplicationController
 
   def index
     @stats = [
-      { label: "CONTRATOS", value: number_with_delimiter(Contract.count),  color: "text-[#c8a84e]" },
-      { label: "ENTIDADES", value: number_with_delimiter(Entity.count),     color: "text-[#e8e0d4]" },
-      { label: "FONTES",    value: DataSource.where(status: :active).count, color: "text-[#e8e0d4]" },
-      { label: "ALERTAS",   value: "0",                                      color: "text-[#ff4444]" }
+      { label: t("stats.contracts"), value: number_with_delimiter(Contract.count),              color: "text-[#c8a84e]" },
+      { label: t("stats.entities"),  value: number_with_delimiter(Entity.count),                color: "text-[#e8e0d4]" },
+      { label: t("stats.sources"),   value: DataSource.where(status: :active).count.to_s,       color: "text-[#e8e0d4]" },
+      { label: t("stats.alerts"),    value: "0",                                                 color: "text-[#ff4444]" }
     ]
 
     @sources = DataSource.order(:country_code, :name).map do |ds|
@@ -47,10 +47,10 @@ class DashboardController < ApplicationController
     ]
 
     @crossings = [
-      { label: "Entidades com contratos na base de dados",        count: number_with_delimiter(Entity.where(is_public_body: false).count) },
-      { label: "Entidades adjudicantes na base de dados",         count: number_with_delimiter(Entity.where(is_public_body: true).count) },
-      { label: "Empresas NIPC com doações a partidos (ECFP)",     count: "—" },
-      { label: "Empresas NIPC com sanções (Tribunal de Contas)",  count: "—" }
+      { label: t("dashboard.crossings.contracts_with_winners"), count: number_with_delimiter(Entity.where(is_public_body: false).count) },
+      { label: t("dashboard.crossings.public_bodies"),          count: number_with_delimiter(Entity.where(is_public_body: true).count) },
+      { label: t("dashboard.crossings.ecfp_donors"),            count: "—" },
+      { label: t("dashboard.crossings.tdc_sanctions"),          count: "—" }
     ]
   end
 end

@@ -3,7 +3,7 @@
   <header class="py-8 border-b border-white/10">
     <div class="flex items-center gap-4 mb-3">
       <%= link_to contracts_path, class: "font-mono text-[11px] tracking-[2px] text-white/30 hover:text-white/60 transition-colors" do %>
-        ← Contracts
+        <%= t("contracts.show.back") %>
       <% end %>
       <% if @contract.country_code.present? %>
         <span class="font-mono text-[10px] text-white/20 bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">
@@ -29,10 +29,10 @@
 
       <%# Price card %>
       <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
-        <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase">Price</div>
+        <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase"><%= t("contracts.show.price.heading") %></div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <div class="font-mono text-[10px] text-white/30 mb-1">Base Price</div>
+            <div class="font-mono text-[10px] text-white/30 mb-1"><%= t("contracts.show.price.base") %></div>
             <div class="font-['Space_Grotesk'] text-2xl font-bold text-[#c8a84e]">
               <% if @contract.base_price %>
                 €<%= number_with_delimiter(@contract.base_price.to_i) %>
@@ -43,7 +43,7 @@
             </div>
           </div>
           <div>
-            <div class="font-mono text-[10px] text-white/30 mb-1">Effective Price</div>
+            <div class="font-mono text-[10px] text-white/30 mb-1"><%= t("contracts.show.price.effective") %></div>
             <div class="font-['Space_Grotesk'] text-2xl font-bold text-[#e8e0d4]">
               <% if @contract.total_effective_price %>
                 €<%= number_with_delimiter(@contract.total_effective_price.to_i) %>
@@ -64,13 +64,13 @@
 
       <%# Details card %>
       <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
-        <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase">Contract Details</div>
+        <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase"><%= t("contracts.show.details.heading") %></div>
         <dl class="space-y-3">
           <% {
-            "Contract Type"  => @contract.contract_type,
-            "Procedure"      => @contract.procedure_type,
-            "CPV Code"       => @contract.cpv_code,
-            "Location"       => @contract.location,
+            t("contracts.show.details.contract_type") => @contract.contract_type,
+            t("contracts.show.details.procedure")     => @contract.procedure_type,
+            t("contracts.show.details.cpv_code")      => @contract.cpv_code,
+            t("contracts.show.details.location")      => @contract.location,
           }.each do |label, value| %>
             <div class="grid grid-cols-[160px_1fr] gap-3 items-baseline">
               <dt class="font-mono text-[11px] text-white/30"><%= label %></dt>
@@ -84,17 +84,17 @@
       <% if @contract.winners.any? %>
         <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
           <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase">
-            <%= @contract.winners.size == 1 ? "Winner" : "Winners" %>
+            <%= t("contracts.show.winners.heading", count: @contract.winners.size) %>
           </div>
           <div class="space-y-2">
             <% @contract.winners.each do |winner| %>
               <div class="flex items-center justify-between py-2.5 px-3 bg-white/[0.02] border border-white/[0.05] rounded">
                 <div>
                   <div class="text-sm text-[#e8e0d4] font-medium"><%= winner.name %></div>
-                  <div class="font-mono text-[10px] text-white/30 mt-0.5">NIF <%= winner.tax_identifier %></div>
+                  <div class="font-mono text-[10px] text-white/30 mt-0.5"><%= t("contracts.show.winners.nif", id: winner.tax_identifier) %></div>
                 </div>
                 <% if winner.is_company? %>
-                  <span class="font-mono text-[10px] text-white/30 bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]">Company</span>
+                  <span class="font-mono text-[10px] text-white/30 bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.06]"><%= t("contracts.show.winners.company") %></span>
                 <% end %>
               </div>
             <% end %>
@@ -109,23 +109,23 @@
 
       <%# Dates %>
       <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
-        <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase">Dates</div>
+        <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase"><%= t("contracts.show.dates.heading") %></div>
         <dl class="space-y-3">
           <div>
-            <dt class="font-mono text-[10px] text-white/30 mb-0.5">Publication</dt>
+            <dt class="font-mono text-[10px] text-white/30 mb-0.5"><%= t("contracts.show.dates.publication") %></dt>
             <dd class="font-mono text-sm text-[#e8e0d4]">
               <%= @contract.publication_date&.strftime("%d %b %Y") || "—" %>
             </dd>
           </div>
           <div>
-            <dt class="font-mono text-[10px] text-white/30 mb-0.5">Celebration</dt>
+            <dt class="font-mono text-[10px] text-white/30 mb-0.5"><%= t("contracts.show.dates.celebration") %></dt>
             <dd class="font-mono text-sm text-[#e8e0d4]">
               <%= @contract.celebration_date&.strftime("%d %b %Y") || "—" %>
             </dd>
           </div>
           <% if @contract.publication_date && @contract.celebration_date && @contract.celebration_date < @contract.publication_date %>
             <div class="font-mono text-[10px] text-[#ff4444] bg-[#ff44440d] border border-[#ff444422] rounded px-2 py-1.5">
-              ⚠ Celebrated before publication
+              <%= t("contracts.show.dates.early_flag") %>
             </div>
           <% end %>
         </dl>
@@ -134,16 +134,16 @@
       <%# Contracting entity %>
       <% if @contract.contracting_entity %>
         <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
-          <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase">Contracting Entity</div>
+          <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-4 uppercase"><%= t("contracts.show.entity.heading") %></div>
           <div class="text-sm text-[#e8e0d4] font-medium leading-snug mb-1.5">
             <%= @contract.contracting_entity.name %>
           </div>
           <div class="font-mono text-[10px] text-white/30">
-            NIF <%= @contract.contracting_entity.tax_identifier %>
+            <%= t("contracts.show.winners.nif", id: @contract.contracting_entity.tax_identifier) %>
           </div>
           <% if @contract.contracting_entity.is_public_body? %>
             <span class="inline-block mt-2 font-mono text-[10px] text-[#44ff88] bg-[#44ff880d] border border-[#44ff8822] px-2 py-0.5 rounded">
-              Public body
+              <%= t("contracts.show.entity.public_body") %>
             </span>
           <% end %>
         </div>
@@ -152,12 +152,12 @@
       <%# Source %>
       <% if @contract.data_source %>
         <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
-          <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-3 uppercase">Data Source</div>
+          <div class="font-mono text-[10px] tracking-[2px] text-white/35 mb-3 uppercase"><%= t("contracts.show.source.heading") %></div>
           <div class="text-sm text-[#e8e0d4]"><%= @contract.data_source.name %></div>
           <div class="font-mono text-[10px] text-white/25 mt-1">
             <%= @contract.data_source.source_type.capitalize %>
             <% if @contract.data_source.last_synced_at %>
-              · synced <%= @contract.data_source.last_synced_at.strftime("%Y-%m-%d") %>
+              · <%= t("contracts.show.source.synced", date: @contract.data_source.last_synced_at.strftime("%Y-%m-%d")) %>
             <% end %>
           </div>
         </div>

@@ -3,39 +3,39 @@
   <header class="py-8 border-b border-white/10">
     <div class="flex items-center gap-3 mb-1">
       <%= link_to root_path, class: "font-mono text-[11px] tracking-[2px] text-white/30 hover:text-white/60 transition-colors" do %>
-        ← Dashboard
+        ← <%= t("nav.dashboard") %>
       <% end %>
     </div>
     <h1 class="font-['Space_Grotesk'] text-3xl font-bold tracking-tight bg-gradient-to-r from-[#e8e0d4] to-[#c8a84e] bg-clip-text text-transparent mb-1 mt-2">
-      Public Contracts
+      <%= t("contracts.index.title") %>
     </h1>
     <p class="text-white/35 text-sm">
-      <%= number_with_delimiter(@total) %> contracts · filtered from <%= number_with_delimiter(Contract.count) %> total
+      <%= t("contracts.index.subtitle", count: @total, total: number_with_delimiter(@total), all: number_with_delimiter(Contract.count)) %>
     </p>
   </header>
 
   <%# Filters %>
   <%= form_with url: contracts_path, method: :get, local: true, class: "flex flex-wrap gap-2 my-6" do |f| %>
     <div class="flex-1 min-w-[200px]">
-      <%= f.text_field :q, value: params[:q], placeholder: "Search contract description…",
+      <%= f.text_field :q, value: params[:q], placeholder: t("contracts.index.search_placeholder"),
           class: "w-full bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] placeholder-white/20 focus:outline-none focus:border-[#c8a84e55] focus:bg-white/[0.06] transition-all" %>
     </div>
     <div>
       <%= f.select :procedure_type,
-          [["All procedures", ""]] + @procedure_types.map { |t| [t, t] },
+          [[t("contracts.index.all_procedures"), ""]] + @procedure_types.map { |type| [type, type] },
           { selected: params[:procedure_type] },
           class: "bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
     </div>
     <div>
       <%= f.select :country,
-          [["All countries", ""]] + @countries.map { |c| [c, c] },
+          [[t("contracts.index.all_countries"), ""]] + @countries.map { |c| [c, c] },
           { selected: params[:country] },
           class: "bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
     </div>
-    <%= f.submit "Filter",
+    <%= f.submit t("contracts.index.filter"),
         class: "bg-[#c8a84e1a] border border-[#c8a84e44] text-[#c8a84e] font-mono text-xs tracking-widest px-4 py-2 rounded hover:bg-[#c8a84e33] transition-all cursor-pointer" %>
     <% if params[:q].present? || params[:procedure_type].present? || params[:country].present? %>
-      <%= link_to "Clear", contracts_path,
+      <%= link_to t("contracts.index.clear"), contracts_path,
           class: "border border-white/10 text-white/30 font-mono text-xs tracking-widest px-4 py-2 rounded hover:text-white/50 transition-all" %>
     <% end %>
   <% end %>
@@ -44,16 +44,16 @@
   <div class="border border-white/[0.08] rounded-lg overflow-hidden">
     <%# Header row %>
     <div class="grid grid-cols-[1fr_180px_140px_120px_90px] bg-white/[0.03] px-5 py-3 border-b border-white/[0.08] font-mono text-[10px] tracking-[2px] text-white/35 uppercase">
-      <span>Contract</span>
-      <span>Contracting Entity</span>
-      <span>Procedure</span>
-      <span class="text-right">Base Price</span>
-      <span class="text-right">Date</span>
+      <span><%= t("contracts.index.col_contract") %></span>
+      <span><%= t("contracts.index.col_entity") %></span>
+      <span><%= t("contracts.index.col_procedure") %></span>
+      <span class="text-right"><%= t("contracts.index.col_price") %></span>
+      <span class="text-right"><%= t("contracts.index.col_date") %></span>
     </div>
 
     <% if @contracts.empty? %>
       <div class="px-5 py-12 text-center font-mono text-sm text-white/25">
-        No contracts found.
+        <%= t("contracts.index.empty") %>
       </div>
     <% else %>
       <% @contracts.each do |contract| %>
@@ -95,15 +95,15 @@
   <% if @total_pages > 1 %>
     <div class="flex items-center justify-between mt-6 font-mono text-xs text-white/35">
       <span>
-        Page <%= @page %> of <%= @total_pages %> · <%= number_with_delimiter(@total) %> results
+        <%= t("contracts.index.pagination.info", page: @page, total_pages: @total_pages, total: number_with_delimiter(@total)) %>
       </span>
       <div class="flex gap-2">
         <% if @page > 1 %>
-          <%= link_to "← Prev", contracts_path(request.query_parameters.merge(page: @page - 1)),
+          <%= link_to t("contracts.index.pagination.prev"), contracts_path(request.query_parameters.merge(page: @page - 1)),
               class: "border border-white/10 px-3 py-1.5 rounded hover:border-[#c8a84e44] hover:text-[#c8a84e] transition-all" %>
         <% end %>
         <% if @page < @total_pages %>
-          <%= link_to "Next →", contracts_path(request.query_parameters.merge(page: @page + 1)),
+          <%= link_to t("contracts.index.pagination.next"), contracts_path(request.query_parameters.merge(page: @page + 1)),
               class: "border border-white/10 px-3 py-1.5 rounded hover:border-[#c8a84e44] hover:text-[#c8a84e] transition-all" %>
         <% end %>
       </div>

@@ -3,16 +3,16 @@
   <header class="py-8 border-b border-white/10">
     <div class="flex items-center gap-3 mb-1">
       <div class="w-2.5 h-2.5 rounded-full bg-[#ff4444] shadow-[0_0_12px_rgba(255,68,68,0.5)] animate-pulse-slow"></div>
-      <span class="font-mono text-[11px] tracking-[3px] text-white/40 font-semibold uppercase">Live</span>
+      <span class="font-mono text-[11px] tracking-[3px] text-white/40 font-semibold uppercase"><%= t("app.live") %></span>
       <%= link_to contracts_path, class: "ml-auto font-mono text-[11px] tracking-[2px] text-white/30 hover:text-[#c8a84e] transition-colors uppercase" do %>
-        Contracts →
+        <%= t("nav.contracts") %> →
       <% end %>
     </div>
     <h1 class="font-['Space_Grotesk'] text-3xl font-bold tracking-tight bg-gradient-to-r from-[#e8e0d4] to-[#c8a84e] bg-clip-text text-transparent mb-1">
-      Observatório de Integridade
+      <%= t("app.name") %>
     </h1>
     <p class="text-white/35 text-sm">
-      Cruzamento automatizado de bases de dados públicas portuguesas para deteção de irregularidades
+      <%= t("app.tagline") %>
     </p>
   </header>
 
@@ -32,17 +32,17 @@
 
   <%# Tabs %>
   <div class="flex border-b border-white/10 mb-6">
-    <button data-dashboard-target="tab" data-tab="insights" data-action="click->dashboard#switchTab" 
+    <button data-dashboard-target="tab" data-tab="insights" data-action="click->dashboard#switchTab"
             class="font-mono text-xs tracking-widest uppercase bg-none border-none px-5 py-3 cursor-pointer transition-all font-semibold text-[#c8a84e] border-b-2 border-[#c8a84e]">
-      Insights <%= @insights.size %>
+      <%= t("dashboard.tabs.insights") %> <%= @insights.size %>
     </button>
-    <button data-dashboard-target="tab" data-tab="cruzamentos" data-action="click->dashboard#switchTab" 
+    <button data-dashboard-target="tab" data-tab="cruzamentos" data-action="click->dashboard#switchTab"
             class="font-mono text-xs tracking-widest uppercase bg-none border-none px-5 py-3 cursor-pointer transition-all font-semibold text-white/30 border-b-2 border-transparent">
-      Cruzamentos
+      <%= t("dashboard.tabs.crossings") %>
     </button>
-    <button data-dashboard-target="tab" data-tab="fontes" data-action="click->dashboard#switchTab" 
+    <button data-dashboard-target="tab" data-tab="fontes" data-action="click->dashboard#switchTab"
             class="font-mono text-xs tracking-widest uppercase bg-none border-none px-5 py-3 cursor-pointer transition-all font-semibold text-white/30 border-b-2 border-transparent">
-      Fontes
+      <%= t("dashboard.tabs.sources") %>
     </button>
   </div>
 
@@ -51,15 +51,15 @@
     <%# Exposure banner %>
     <div class="bg-gradient-to-br from-[#c8a84e14] to-[#ff44440f] border border-[#c8a84e26] border-l-4 border-l-[#c8a84e] rounded-lg p-7 mb-6">
       <div class="font-mono text-[10px] tracking-[3px] text-[#c8a84e] mb-1">
-        EXPOSIÇÃO TOTAL
+        <%= t("dashboard.exposure.label") %>
       </div>
       <div class="flex justify-between items-baseline">
         <span class="font-['Space_Grotesk'] text-5xl font-bold text-[#e8e0d4] tracking-tighter">
           €31.1M
         </span>
         <div class="text-right font-mono text-sm">
-          <div class="text-white/50"><%= @insights.size %> irregularidades</div>
-          <div class="text-white/35">12 fontes</div>
+          <div class="text-white/50"><%= t("dashboard.exposure.irregularities", count: @insights.size) %></div>
+          <div class="text-white/35"><%= t("dashboard.exposure.sources", count: 12) %></div>
         </div>
       </div>
     </div>
@@ -67,7 +67,7 @@
     <%# Cards %>
     <div class="flex flex-col gap-2">
       <% @insights.each do |insight| %>
-        <div data-action="click->dashboard#toggleInsight" 
+        <div data-action="click->dashboard#toggleInsight"
              class="bg-white/[0.02] border border-white/[0.06] border-l-[3px] border-l-[#c8a84e] rounded-lg p-5 cursor-pointer transition-all hover:bg-white/[0.04]">
           <div class="flex justify-between items-start mb-2">
             <div class="flex items-center gap-3">
@@ -89,13 +89,13 @@
           <div class="font-mono text-base text-[#c8a84e] font-medium">
             💰 <%= insight[:amount] %>
           </div>
-          
+
           <div data-details class="hidden mt-4 animate-fade-up">
             <p class="text-white/65 text-sm leading-relaxed mb-4">
               <%= insight[:description] %>
             </p>
             <div class="bg-black/30 border-l-2 border-[#c8a84e55] rounded p-3 mb-3">
-              <div class="font-mono text-[10px] text-white/35 tracking-widest mb-1.5 uppercase">Pattern</div>
+              <div class="font-mono text-[10px] text-white/35 tracking-widest mb-1.5 uppercase"><%= t("dashboard.insights.pattern") %></div>
               <div class="font-mono text-xs text-[#c8a84e] font-medium">
                 <%= insight[:pattern] %>
               </div>
@@ -115,12 +115,12 @@
 
   <%# Crossings Pane %>
   <div data-dashboard-target="pane" data-pane="cruzamentos" class="hidden">
-    <h2 class="font-['Space_Grotesk'] text-xl font-semibold mb-2 text-[#e8e0d4]">Ligação de entidades via NIF / NIPC</h2>
-    <p class="text-white/40 text-sm mb-6">Identificador único como chave de cruzamento entre bases de dados</p>
+    <h2 class="font-['Space_Grotesk'] text-xl font-semibold mb-2 text-[#e8e0d4]"><%= t("dashboard.crossings.heading") %></h2>
+    <p class="text-white/40 text-sm mb-6"><%= t("dashboard.crossings.subheading") %></p>
     <div class="border border-white/[0.08] rounded-lg overflow-hidden">
       <div class="grid grid-cols-[1fr_120px] bg-white/[0.03] p-3 px-5 border-b border-white/[0.08] font-mono text-[11px] tracking-widest text-white/40">
-        <span>CRUZAMENTO</span>
-        <span class="text-right">CONTAGEM</span>
+        <span><%= t("dashboard.crossings.col_crossing") %></span>
+        <span class="text-right"><%= t("dashboard.crossings.col_count") %></span>
       </div>
       <% @crossings.each do |row| %>
         <div class="grid grid-cols-[1fr_120px] p-3.5 px-5 border-b border-white/[0.04] last:border-0 font-mono text-sm">
@@ -133,8 +133,8 @@
 
   <%# Sources Pane %>
   <div data-dashboard-target="pane" data-pane="fontes" class="hidden">
-    <h2 class="font-['Space_Grotesk'] text-xl font-semibold mb-2">Fontes de Dados Conectadas</h2>
-    <p class="text-white/40 text-sm mb-6">Bases de dados públicas portuguesas e europeias</p>
+    <h2 class="font-['Space_Grotesk'] text-xl font-semibold mb-2"><%= t("dashboard.sources.heading") %></h2>
+    <p class="text-white/40 text-sm mb-6"><%= t("dashboard.sources.subheading") %></p>
     <div class="grid grid-cols-2 gap-2">
       <% @sources.each do |source| %>
         <% dot_color = source[:status] == "active" ? "bg-[#44ff88] shadow-[0_0_6px_rgba(68,255,136,0.4)]" :
@@ -153,10 +153,10 @@
           </div>
           <div class="flex justify-between font-mono">
             <span class="text-[11px] text-white/35"><%= source[:type] %></span>
-            <span class="text-xs text-[#c8a84e]"><%= source[:records] %> registos</span>
+            <span class="text-xs text-[#c8a84e]"><%= t("dashboard.sources.records", count: source[:records]) %></span>
           </div>
           <% if source[:synced_at] %>
-            <div class="font-mono text-[10px] text-white/20 mt-1">sincronizado <%= source[:synced_at] %></div>
+            <div class="font-mono text-[10px] text-white/20 mt-1"><%= t("dashboard.sources.synced", date: source[:synced_at]) %></div>
           <% end %>
         </div>
       <% end %>
@@ -166,10 +166,10 @@
   <%# Footer %>
   <footer class="py-10 border-t border-white/[0.04] mt-12 text-center space-y-1">
     <div class="font-mono text-[10px] tracking-[2px] text-white/20">
-      OBSERVATÓRIO DE INTEGRIDADE • PROTÓTIPO • RAILS 8 + HOTWIRE
+      <%= t("app.footer_title") %>
     </div>
     <div class="font-mono text-[10px] text-white/15">
-      Fontes reais: Portal BASE • ECFP/CNE • Registo Comercial • RCBE • Tribunal de Contas • DGAL
+      <%= t("app.footer_sources") %>
     </div>
   </footer>
 </div>

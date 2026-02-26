@@ -1,31 +1,101 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  app:
+    name: "Observatório de Integridade"
+    tagline: "Automated cross-referencing of Portuguese public databases to detect irregularities"
+    live: "LIVE"
+    prototype: "Prototype · Rails 8 + Hotwire"
+    footer_title: "OBSERVATÓRIO DE INTEGRIDADE · PROTOTYPE · RAILS 8 + HOTWIRE"
+    footer_sources: "Real sources: Portal BASE · ECFP/CNE · Registo Comercial · RCBE · Tribunal de Contas · DGAL"
+
+  nav:
+    contracts: "Contracts"
+    dashboard: "Dashboard"
+
+  stats:
+    contracts: "CONTRACTS"
+    entities: "ENTITIES"
+    sources: "SOURCES"
+    alerts: "ALERTS"
+
+  dashboard:
+    tabs:
+      insights: "Insights"
+      crossings: "Crossings"
+      sources: "Sources"
+    exposure:
+      label: "TOTAL EXPOSURE"
+      irregularities:
+        one: "%{count} irregularity"
+        other: "%{count} irregularities"
+      sources: "%{count} sources"
+    insights:
+      pattern: "Pattern"
+    crossings:
+      heading: "Entity linking via NIF / NIPC"
+      subheading: "Unique identifier as the cross-reference key between databases"
+      col_crossing: "CROSSING"
+      col_count: "COUNT"
+      contracts_with_winners: "Entities with contracts in the database"
+      public_bodies: "Contracting authorities in the database"
+      ecfp_donors: "Companies NIF with party donations (ECFP)"
+      tdc_sanctions: "Companies NIF with sanctions (Court of Auditors)"
+    sources:
+      heading: "Connected Data Sources"
+      subheading: "Portuguese and European public databases"
+      records: "%{count} records"
+      synced: "synced %{date}"
+
+  contracts:
+    index:
+      title: "Public Contracts"
+      subtitle:
+        one: "%{total} contract · filtered from %{all} total"
+        other: "%{total} contracts · filtered from %{all} total"
+      search_placeholder: "Search contract description…"
+      all_procedures: "All procedures"
+      all_countries: "All countries"
+      filter: "Filter"
+      clear: "Clear"
+      col_contract: "Contract"
+      col_entity: "Contracting Entity"
+      col_procedure: "Procedure"
+      col_price: "Base Price"
+      col_date: "Date"
+      empty: "No contracts found."
+      pagination:
+        info: "Page %{page} of %{total_pages} · %{total} results"
+        prev: "← Prev"
+        next: "Next →"
+    show:
+      back: "← Contracts"
+      price:
+        heading: "Price"
+        base: "Base Price"
+        effective: "Effective Price"
+      details:
+        heading: "Contract Details"
+        contract_type: "Contract Type"
+        procedure: "Procedure"
+        cpv_code: "CPV Code"
+        location: "Location"
+      winners:
+        heading:
+          one: "Winner"
+          other: "Winners"
+        company: "Company"
+        nif: "NIF %{id}"
+      dates:
+        heading: "Dates"
+        publication: "Publication"
+        celebration: "Celebration"
+        early_flag: "⚠ Celebrated before publication"
+      entity:
+        heading: "Contracting Entity"
+        public_body: "Public body"
+      source:
+        heading: "Data Source"
+        synced: "synced %{date}"
+
+  locale:
+    en: "EN"
+    pt: "PT"
