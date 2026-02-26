@@ -4,7 +4,9 @@
     <div class="flex items-center gap-3 mb-1">
       <div class="w-2.5 h-2.5 rounded-full bg-[#ff4444] shadow-[0_0_12px_rgba(255,68,68,0.5)] animate-pulse-slow"></div>
       <span class="font-mono text-[11px] tracking-[3px] text-white/40 font-semibold uppercase">Live</span>
-      <span class="font-mono text-[11px] text-white/20 ml-auto uppercase">Protótipo • Rails 8 + Hotwire</span>
+      <%= link_to contracts_path, class: "ml-auto font-mono text-[11px] tracking-[2px] text-white/30 hover:text-[#c8a84e] transition-colors uppercase" do %>
+        Contracts →
+      <% end %>
     </div>
     <h1 class="font-['Space_Grotesk'] text-3xl font-bold tracking-tight bg-gradient-to-r from-[#e8e0d4] to-[#c8a84e] bg-clip-text text-transparent mb-1">
       Observatório de Integridade
