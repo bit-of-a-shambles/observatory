@@ -1,0 +1,100 @@
+pt:
+  app:
+    name: "Observatório de Integridade"
+    tagline: "Cruzamento automatizado de bases de dados públicas portuguesas para deteção de irregularidades"
+    live: "AO VIVO"
+    prototype: "Protótipo · Rails 8 + Hotwire"
+    footer_repo: "Open source — contribuir no GitHub"
+
+  nav:
+    contracts: "Contratos"
+    dashboard: "Dashboard"
+
+  stats:
+    contracts: "CONTRATOS"
+    entities: "ENTIDADES"
+    sources: "FONTES"
+    alerts: "ALERTAS"
+
+  dashboard:
+    tabs:
+      insights: "Insights"
+      crossings: "Cruzamentos"
+      sources: "Fontes"
+    exposure:
+      label: "EXPOSIÇÃO TOTAL"
+      irregularities:
+        one: "%{count} irregularidade"
+        other: "%{count} irregularidades"
+      sources: "%{count} fontes"
+    insights:
+      pattern: "Padrão"
+    crossings:
+      heading: "Ligação de entidades via NIF / NIPC"
+      subheading: "Identificador único como chave de cruzamento entre bases de dados"
+      col_crossing: "CRUZAMENTO"
+      col_count: "CONTAGEM"
+      contracts_with_winners: "Entidades com contratos na base de dados"
+      public_bodies: "Entidades adjudicantes na base de dados"
+      ecfp_donors: "Empresas NIPC com doações a partidos (ECFP)"
+      tdc_sanctions: "Empresas NIPC com sanções (Tribunal de Contas)"
+    sources:
+      heading: "Fontes de Dados Conectadas"
+      subheading: "Bases de dados públicas portuguesas e europeias"
+      records: "%{count} registos"
+      synced: "sincronizado %{date}"
+
+  contracts:
+    index:
+      title: "Contratos Públicos"
+      subtitle:
+        one: "%{total} contrato · filtrado de %{all} no total"
+        other: "%{total} contratos · filtrado de %{all} no total"
+      search_placeholder: "Pesquisar descrição do contrato…"
+      all_procedures: "Todos os procedimentos"
+      all_countries: "Todos os países"
+      filter: "Filtrar"
+      clear: "Limpar"
+      col_contract: "Contrato"
+      col_entity: "Entidade Adjudicante"
+      col_procedure: "Procedimento"
+      col_price: "Preço Base"
+      col_date: "Data"
+      empty: "Nenhum contrato encontrado."
+      pagination:
+        info: "Página %{page} de %{total_pages} · %{total} resultados"
+        prev: "← Anterior"
+        next: "Próximo →"
+    show:
+      back: "← Contratos"
+      price:
+        heading: "Preço"
+        base: "Preço Base"
+        effective: "Preço Efetivo"
+      details:
+        heading: "Detalhes do Contrato"
+        contract_type: "Tipo de Contrato"
+        procedure: "Procedimento"
+        cpv_code: "Código CPV"
+        location: "Localização"
+      winners:
+        heading:
+          one: "Adjudicatário"
+          other: "Adjudicatários"
+        company: "Empresa"
+        nif: "NIF %{id}"
+      dates:
+        heading: "Datas"
+        publication: "Publicação"
+        celebration: "Celebração"
+        early_flag: "⚠ Celebrado antes da publicação"
+      entity:
+        heading: "Entidade Adjudicante"
+        public_body: "Entidade pública"
+      source:
+        heading: "Fonte de Dados"
+        synced: "sincronizado %{date}"
+
+  locale:
+    en: "EN"
+    pt: "PT"

@@ -1,0 +1,29 @@
+one:
+  external_id: "contract-001"
+  contracting_entity: one
+  data_source: portal_base
+  country_code: PT
+  object: Fornecimento de material de escritório
+  contract_type: Aquisição de Bens
+  procedure_type: Ajuste Direto
+  publication_date: 2026-02-01
+  celebration_date: 2026-02-10
+  base_price: 18000.00
+  total_effective_price: 17500.00
+  cpv_code: "30192000"
+  location: Lisboa
+
+two:
+  external_id: "contract-002"
+  contracting_entity: one
+  data_source: portal_base
+  country_code: PT
+  object: Serviços de limpeza
+  contract_type: Aquisição de Serviços
+  procedure_type: Ajuste Direto
+  publication_date: 2026-02-05
+  celebration_date: 2026-02-12
+  base_price: 19500.00
+  total_effective_price: 19500.00
+  cpv_code: "90911000"
+  location: Porto

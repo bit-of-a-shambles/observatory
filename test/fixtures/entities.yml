@@ -1,0 +1,19 @@
+one:
+  name: Câmara Municipal de Lisboa
+  tax_identifier: "500123456"
+  country_code: PT
+  is_public_body: true
+  is_company: false
+  address: Praça do Município
+  postal_code: "1100-038"
+  locality: Lisboa
+
+two:
+  name: Construções Ferreira Lda
+  tax_identifier: "509999001"
+  country_code: PT
+  is_public_body: false
+  is_company: true
+  address: Rua das Obras 10
+  postal_code: "4000-100"
+  locality: Porto
