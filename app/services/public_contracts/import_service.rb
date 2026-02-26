@@ -18,6 +18,15 @@ module PublicContracts
     private
 
     def import_contract(attrs)
+      contract = Contract.find_or_initialize_by(
+        external_id:  attrs["external_id"],
+        country_code: attrs["country_code"] || @ds.country_code
+      )
+      if cross_source_collision?(contract)
+        log_cross_source_collision(contract)
+        return
+      end
+
       contracting = find_or_create_entity(
         attrs.dig("contracting_entity", "tax_identifier"),
         attrs.dig("contracting_entity", "name"),
@@ -25,23 +34,26 @@ module PublicContracts
       )
       return unless contracting
 
-      contract = Contract.find_or_create_by!(
-        external_id:  attrs["external_id"],
-        country_code: attrs["country_code"] || @ds.country_code
-      ) do |c|
-        c.object               = attrs["object"]
-        c.country_code         = attrs["country_code"] || @ds.country_code
-        c.contract_type        = attrs["contract_type"]
-        c.procedure_type       = attrs["procedure_type"]
-        c.publication_date     = attrs["publication_date"]
-        c.celebration_date     = attrs["celebration_date"]
-        c.base_price           = attrs["base_price"]
-        c.total_effective_price = attrs["total_effective_price"]
-        c.cpv_code             = attrs["cpv_code"]
-        c.location             = attrs["location"]
-        c.contracting_entity   = contracting
-        c.data_source          = @ds
-      end
+      contract_attrs = {
+        object:                attrs["object"].presence,
+        country_code:          attrs["country_code"] || @ds.country_code,
+        contract_type:         attrs["contract_type"].presence,
+        procedure_type:        attrs["procedure_type"].presence,
+        publication_date:      attrs["publication_date"],
+        celebration_date:      attrs["celebration_date"],
+        base_price:            attrs["base_price"],
+        total_effective_price: attrs["total_effective_price"],
+        cpv_code:              attrs["cpv_code"].presence,
+        location:              attrs["location"].presence
+      }.compact
+
+      contract.assign_attributes(
+        contract_attrs.merge(
+          contracting_entity: contracting,
+          data_source: @ds
+        )
+      )
+      contract.save! if contract.new_record? || contract.changed?
 
       Array(attrs["winners"]).each do |winner_attrs|
         winner = find_or_create_entity(
@@ -62,6 +74,20 @@ module PublicContracts
         e.is_public_body = is_public_body
         e.is_company    = is_company
       end
+    end
+
+    def cross_source_collision?(contract)
+      contract.persisted? &&
+        contract.data_source_id.present? &&
+        contract.data_source_id != @ds.id
+    end
+
+    def log_cross_source_collision(contract)
+      Rails.logger.warn(
+        "[ImportService] Skipping contract due to cross-source collision " \
+        "external_id=#{contract.external_id} country_code=#{contract.country_code} " \
+        "existing_data_source_id=#{contract.data_source_id} incoming_data_source_id=#{@ds.id}"
+      )
     end
   end
 end
