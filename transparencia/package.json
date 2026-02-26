@@ -1,0 +1,17 @@
+{
+  "name": "observatorio-integridade",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "parcel index.html --open",
+    "build": "parcel build index.html --public-url ./"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "parcel": "^2.9.3"
+  }
+}

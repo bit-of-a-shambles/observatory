@@ -14,3 +14,11 @@ ted_pt:
   config: '{"country_code":"PRT"}'
   status: inactive
   record_count: 0
+
+sns_pt:
+  country_code: PT
+  name: Portal da Transparência SNS
+  source_type: api
+  adapter_class: PublicContracts::PT::SnsClient
+  status: inactive
+  record_count: 0
