@@ -21,7 +21,7 @@ Adicionar um novo país requer uma classe adaptadora e um registo na base de dad
 ## Stack
 
 - Ruby 3.3.0 / Rails 8
-- SQLite
+- SQLite + Solid Queue
 - Hotwire + Tailwind CSS (interface cyberpunk-noir)
 - Minitest + SimpleCov (cobertura de linha próxima de 100%)
 
@@ -102,12 +102,12 @@ Cada caso sinalizado regista os campos que o despoletaram, uma pontuação de co
 
 | Fase | Estado | Âmbito |
 |---|---|---|
-| 1 — Espinha dorsal de contratação | Concluída | Ingestão BASE, framework de adaptadores multi-país, modelo de domínio, cobertura de testes >99% |
+| 1 — Espinha dorsal de contratação | Em progresso | Ingestão BASE, framework de adaptadores multi-país, modelo de domínio, cobertura de testes >99% |
 | 2 — Dashboard baseado em regras | A seguir | Alertas da Faixa A como queries DB, dashboard com filtro de severidade e drill-down de casos |
 | 3 — Enriquecimento externo | Planeado | Cruzamento com TED, correspondência de sanções AdC, camada Entidade Transparência |
 | 4 — Pontuação por padrões | Planeado | Indicadores estatísticos da Faixa B: índice de concentração, outliers de preço, rotação de propostas |
 | 5 — Triagem de casos | Planeado | Pontuação de confiança, trilho de evidências por caso, exportação para referência TdC / AdC / MENAC |
-| 6 — Camada de propriedade | Condicionado | Ligação de beneficiário efetivo via RCBE — acesso limitado pelo acórdão TJUE de 2022 |
+| 6 — Camada de propriedade | Condicionado | Ligação de beneficiário efetivo via RCBE — acesso limitado |
 
 ## Vias de Escalada (Portugal)
 
@@ -119,6 +119,6 @@ Cada caso sinalizado regista os campos que o despoletaram, uma pontuação de co
 
 ## Documentação
 
-- `AGENTS.md` — modelo de domínio, fontes de dados, catálogo de indicadores, normas de código
+- `AGENTS.md` — modelo de domínio, fontes de dados, catálogo de indicadores, normas de código, to dos
 - `DESIGN.md` — sistema de design UI/UX
 - `docs/plans/` — planos de implementação e blueprints de investigação

@@ -21,8 +21,8 @@ Adding a new country requires an adapter class and a database record. No schema 
 ## Stack
 
 - Ruby 3.3.0 / Rails 8
-- SQLite
-- Hotwire + Tailwind CSS (cyberpunk-noir UI)
+- SQLite + Solid Queue
+- Hotwire + Tailwind CSS
 - Minitest + SimpleCov (100% line coverage)
 
 ## Setup
@@ -44,6 +44,7 @@ bundle exec rails test
 | Country | Source | What it provides | Adapter |
 |---|---|---|---|
 | PT | Portal BASE | Central public contracts portal (primary) | `PublicContracts::PT::PortalBaseClient` |
+| PT | Portal da Transparência SNS | Health-sector contracts via OpenDataSoft | `PublicContracts::PT::SnsClient` |
 | PT | dados.gov.pt | Open data portal, BASE mirrors and OCDS exports | `PublicContracts::PT::DadosGovClient` |
 | PT | Registo Comercial | Company registrations, shareholders, management | `PublicContracts::PT::RegistoComercial` |
 | PT | Entidade Transparência | Public entities, mandates, and persons | *(planned)* |
@@ -105,12 +106,12 @@ See `AGENTS.md` for the full catalogue with OECD and OCP methodology references.
 
 | Phase | Status | Scope |
 |---|---|---|
-| 1 — Procurement spine | Done | BASE ingestion, multi-country adapter framework, domain model, 100% test coverage |
+| 1 — Procurement spine | In Progress | BASE ingestion, multi-country adapter framework, domain model, 100% test coverage |
 | 2 — Rule-based dashboard | Next | Track A flags as DB queries, dashboard with severity filter and case drill-down |
 | 3 — External enrichment | Planned | TED cross-checking, AdC sanction matching, Entidade Transparência layer |
 | 4 — Pattern scoring | Planned | Track B statistical indicators: concentration index, pricing outliers, bid rotation |
 | 5 — Case triage | Planned | Confidence scoring, evidence trail per case, export for TdC / AdC / MENAC referral |
-| 6 — Ownership layer | Constrained | RCBE beneficial ownership linkage — access is limited by the 2022 CJEU ruling |
+| 6 — Ownership layer | Constrained | RCBE beneficial ownership linkage — access is limited |
 
 ## Escalation routes (Portugal)
 
@@ -122,6 +123,6 @@ See `AGENTS.md` for the full catalogue with OECD and OCP methodology references.
 
 ## Docs
 
-- `AGENTS.md` — domain model, data sources, indicator catalogue, coding standards
+- `AGENTS.md` — domain model, data sources, indicator catalogue, coding standards, to dos
 - `DESIGN.md` — UI/UX design system
 - `docs/plans/` — implementation plans and research blueprints
