@@ -1,3 +1,5 @@
+[🇵🇹 Versão em Português](README.pt.md)
+
 # Integrity Observatory
 
 A Rails 8 app that monitors public procurement data across multiple countries to flag corruption risk and abuse patterns. The output is cases for journalists and auditors to investigate, not conclusions.
