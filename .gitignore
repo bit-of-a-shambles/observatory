@@ -62,3 +62,4 @@ yarn-error.log
 /transparencia/dist/
 /transparencia/output/
 /transparencia/files.zip
+/transparencia/.parcel-cache/
