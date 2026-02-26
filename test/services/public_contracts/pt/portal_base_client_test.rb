@@ -29,7 +29,7 @@ class PublicContracts::PT::PortalBaseClientTest < ActiveSupport::TestCase
   end
 
   test "fetch_contracts returns array on success" do
-    payload = [{ "id" => 1, "object" => "Serviços" }]
+    payload = [ { "id" => 1, "object" => "Serviços" } ]
     Net::HTTP.stub(:get_response, fake_success(payload.to_json)) do
       result = @client.fetch_contracts
       assert_equal payload, result

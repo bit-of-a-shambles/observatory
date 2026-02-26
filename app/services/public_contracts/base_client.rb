@@ -12,9 +12,9 @@ module PublicContracts
     def get(path, params = {})
       uri = URI("#{@base_url}#{path}")
       uri.query = URI.encode_www_form(params) if params.any?
-      
+
       response = Net::HTTP.get_response(uri)
-      
+
       if response.is_a?(Net::HTTPSuccess)
         JSON.parse(response.body)
       else

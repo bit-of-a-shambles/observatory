@@ -19,7 +19,7 @@ class PublicContracts::PT::SnsClientTest < ActiveSupport::TestCase
 
   PAYLOAD = {
     "total_count" => 43261,
-    "results"     => [RECORD]
+    "results"     => [ RECORD ]
   }.freeze
 
   def fake_success(body)
@@ -39,10 +39,10 @@ class PublicContracts::PT::SnsClientTest < ActiveSupport::TestCase
 
   def mock_http(response)
     mock = Minitest::Mock.new
-    mock.expect(:use_ssl=,      nil, [TrueClass])
-    mock.expect(:open_timeout=, nil, [Integer])
-    mock.expect(:read_timeout=, nil, [Integer])
-    mock.expect(:request,       response, [Net::HTTP::Get])
+    mock.expect(:use_ssl=,      nil, [ TrueClass ])
+    mock.expect(:open_timeout=, nil, [ Integer ])
+    mock.expect(:read_timeout=, nil, [ Integer ])
+    mock.expect(:request,       response, [ Net::HTTP::Get ])
     mock
   end
 
@@ -181,7 +181,7 @@ class PublicContracts::PT::SnsClientTest < ActiveSupport::TestCase
       "nifs_das_adjudicatarias"             => "509000110|509000111",
       "entidades_adjudicatarias_normalizado" => "MediSupply Lda|FormaPro Lda"
     )
-    payload = { "total_count" => 1, "results" => [multi] }
+    payload = { "total_count" => 1, "results" => [ multi ] }
     mock    = mock_http(fake_success(payload.to_json))
     Net::HTTP.stub(:new, mock) do
       result  = @client.fetch_contracts

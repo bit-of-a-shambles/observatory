@@ -28,10 +28,10 @@ module HttpStubHelper
   # Build a mock HTTP instance for POST requests (TedClient interface).
   def mock_http_post(response)
     mock = Minitest::Mock.new
-    mock.expect(:use_ssl=,      nil, [TrueClass])
-    mock.expect(:open_timeout=, nil, [Integer])
-    mock.expect(:read_timeout=, nil, [Integer])
-    mock.expect(:request,       response, [Net::HTTP::Post])
+    mock.expect(:use_ssl=,      nil, [ TrueClass ])
+    mock.expect(:open_timeout=, nil, [ Integer ])
+    mock.expect(:read_timeout=, nil, [ Integer ])
+    mock.expect(:request,       response, [ Net::HTTP::Post ])
     mock
   end
 end

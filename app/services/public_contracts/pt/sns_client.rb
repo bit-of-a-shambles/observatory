@@ -27,14 +27,14 @@ module PublicContracts
       MAX_LIMIT = 100
 
       def initialize(config = {})
-        @page_size = [config.fetch("page_size", MAX_LIMIT).to_i, MAX_LIMIT].min
+        @page_size = [ config.fetch("page_size", MAX_LIMIT).to_i, MAX_LIMIT ].min
       end
 
       def country_code = COUNTRY_CODE
       def source_name  = SOURCE_NAME
 
       def fetch_contracts(page: 1, limit: MAX_LIMIT)
-        effective_limit = [limit, MAX_LIMIT].min
+        effective_limit = [ limit, MAX_LIMIT ].min
         offset          = (page - 1) * effective_limit
         data            = get_records(limit: effective_limit, offset: offset)
         return [] unless data

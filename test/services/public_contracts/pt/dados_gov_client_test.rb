@@ -29,7 +29,7 @@ class PublicContracts::PT::DadosGovClientTest < ActiveSupport::TestCase
   end
 
   test "search_datasets returns parsed response" do
-    payload = { "data" => [{ "id" => "abc" }] }
+    payload = { "data" => [ { "id" => "abc" } ] }
     Net::HTTP.stub(:get_response, fake_success(payload.to_json)) do
       result = @client.search_datasets("contratos")
       assert_equal payload, result
@@ -52,7 +52,7 @@ class PublicContracts::PT::DadosGovClientTest < ActiveSupport::TestCase
   end
 
   test "fetch_contracts extracts data array" do
-    payload = { "data" => [{ "id" => "c1" }, { "id" => "c2" }] }
+    payload = { "data" => [ { "id" => "c1" }, { "id" => "c2" } ] }
     Net::HTTP.stub(:get_response, fake_success(payload.to_json)) do
       result = @client.fetch_contracts
       assert_equal 2, result.size

@@ -21,7 +21,7 @@ class ContractsController < ApplicationController
     end
 
     @total        = scope.count
-    @page         = [params[:page].to_i, 1].max
+    @page         = [ params[:page].to_i, 1 ].max
     @total_pages  = (@total.to_f / PER_PAGE).ceil
     @contracts    = scope.order(celebration_date: :desc, id: :desc)
                          .limit(PER_PAGE).offset((@page - 1) * PER_PAGE)

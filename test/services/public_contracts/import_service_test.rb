@@ -1,7 +1,6 @@
 require "test_helper"
 
 class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
-
   def build_contract_attrs(overrides = {})
     {
       "external_id"   => "ext-#{SecureRandom.hex(4)}",
@@ -34,7 +33,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call creates a contract from adapter data" do
     attrs = build_contract_attrs
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       assert_difference "Contract.count", 1 do
         PublicContracts::ImportService.new(ds).call
       end
@@ -43,7 +42,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call creates the contracting entity" do
     attrs = build_contract_attrs
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       assert_difference "Entity.count", 2 do
         PublicContracts::ImportService.new(ds).call
       end
@@ -52,7 +51,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call creates winner entity and contract_winner" do
     attrs = build_contract_attrs
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       assert_difference "ContractWinner.count", 1 do
         PublicContracts::ImportService.new(ds).call
       end
@@ -61,7 +60,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call sets data_source on contract" do
     attrs = build_contract_attrs
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       PublicContracts::ImportService.new(ds).call
       contract = Contract.find_by(external_id: attrs["external_id"])
       assert_equal ds.id, contract.data_source_id
@@ -70,7 +69,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call sets country_code from attrs" do
     attrs = build_contract_attrs("country_code" => "PT")
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       PublicContracts::ImportService.new(ds).call
       contract = Contract.find_by(external_id: attrs["external_id"])
       assert_equal "PT", contract.country_code
@@ -79,7 +78,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call falls back to data_source country_code when attrs has none" do
     attrs = build_contract_attrs.tap { |a| a.delete("country_code") }
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       PublicContracts::ImportService.new(ds).call
       contract = Contract.find_by(external_id: attrs["external_id"])
       assert_equal ds.country_code, contract.country_code
@@ -98,7 +97,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
   test "call updates record_count" do
     attrs1 = build_contract_attrs
     attrs2 = build_contract_attrs
-    with_mocked_adapter([attrs1, attrs2]) do |ds, _|
+    with_mocked_adapter([ attrs1, attrs2 ]) do |ds, _|
       PublicContracts::ImportService.new(ds).call
       assert_equal 2, ds.reload.record_count
     end
@@ -106,11 +105,11 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call is idempotent for same external_id" do
     attrs = build_contract_attrs
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       PublicContracts::ImportService.new(ds).call
     end
     adapter2 = Minitest::Mock.new
-    adapter2.expect(:fetch_contracts, [attrs])
+    adapter2.expect(:fetch_contracts, [ attrs ])
     ds = data_sources(:portal_base)
     ds.stub(:adapter, adapter2) do
       assert_no_difference "Contract.count" do
@@ -124,7 +123,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
     attrs = build_contract_attrs(
       "contracting_entity" => { "tax_identifier" => "", "name" => "X" }
     )
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       assert_no_difference "Contract.count" do
         PublicContracts::ImportService.new(ds).call
       end
@@ -135,7 +134,7 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
     attrs = build_contract_attrs(
       "contracting_entity" => { "tax_identifier" => "123456789", "name" => "" }
     )
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       assert_no_difference "Contract.count" do
         PublicContracts::ImportService.new(ds).call
       end
@@ -144,9 +143,9 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
 
   test "call skips winner with blank tax_id" do
     attrs = build_contract_attrs(
-      "winners" => [{ "tax_identifier" => "", "name" => "X" }]
+      "winners" => [ { "tax_identifier" => "", "name" => "X" } ]
     )
-    with_mocked_adapter([attrs]) do |ds, _|
+    with_mocked_adapter([ attrs ]) do |ds, _|
       assert_no_difference "ContractWinner.count" do
         PublicContracts::ImportService.new(ds).call
       end

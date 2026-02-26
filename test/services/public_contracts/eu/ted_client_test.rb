@@ -5,17 +5,17 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
     "publication-number"         => "2026/S001-001",
     "publication-date"           => "2026-01-15Z",
     "notice-title"               => { "eng" => "Supply of surgical equipment", "por" => "Fornecimento de equipamento cirúrgico" },
-    "organisation-country-buyer" => ["PRT"],
-    "organisation-name-buyer"    => { "eng" => ["Centro Hospitalar Lisboa Norte"] },
+    "organisation-country-buyer" => [ "PRT" ],
+    "organisation-name-buyer"    => { "eng" => [ "Centro Hospitalar Lisboa Norte" ] },
     "BT-105-Procedure"           => "open",
     "BT-27-Procedure"            => "732000",
     "BT-27-Procedure-Currency"   => "EUR",
-    "main-classification-proc"   => ["50100000"],
-    "BT-5071-Procedure"          => ["PT300"]
+    "main-classification-proc"   => [ "50100000" ],
+    "BT-5071-Procedure"          => [ "PT300" ]
   }.freeze
 
   NOTICES_PAYLOAD = {
-    "notices"          => [FULL_NOTICE],
+    "notices"          => [ FULL_NOTICE ],
     "totalNoticeCount" => 32000
   }.freeze
 
@@ -37,10 +37,10 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
 
   def mock_http_post(response)
     mock = Minitest::Mock.new
-    mock.expect(:use_ssl=,      nil, [TrueClass])
-    mock.expect(:open_timeout=, nil, [Integer])
-    mock.expect(:read_timeout=, nil, [Integer])
-    mock.expect(:request,       response, [Net::HTTP::Post])
+    mock.expect(:use_ssl=,      nil, [ TrueClass ])
+    mock.expect(:open_timeout=, nil, [ Integer ])
+    mock.expect(:read_timeout=, nil, [ Integer ])
+    mock.expect(:request,       response, [ Net::HTTP::Post ])
     mock
   end
 
@@ -177,7 +177,7 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
 
   test "normalize falls back to Portuguese title when no English" do
     notice = FULL_NOTICE.merge("notice-title" => { "por" => "Fornecimento de equipamento" })
-    payload = { "notices" => [notice], "totalNoticeCount" => 1 }
+    payload = { "notices" => [ notice ], "totalNoticeCount" => 1 }
     mock = mock_http_post(fake_success(payload.to_json))
     Net::HTTP.stub(:new, mock) do
       result = @client.fetch_contracts
@@ -252,9 +252,9 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
   end
 
   test "normalize handles missing optional fields gracefully" do
-    notice = { "publication-number" => "X-001", "organisation-country-buyer" => ["PRT"],
-               "organisation-name-buyer" => { "eng" => ["Test Org"] } }
-    payload = { "notices" => [notice], "totalNoticeCount" => 1 }
+    notice = { "publication-number" => "X-001", "organisation-country-buyer" => [ "PRT" ],
+               "organisation-name-buyer" => { "eng" => [ "Test Org" ] } }
+    payload = { "notices" => [ notice ], "totalNoticeCount" => 1 }
     mock = mock_http_post(fake_success(payload.to_json))
     Net::HTTP.stub(:new, mock) do
       result = @client.fetch_contracts
@@ -286,12 +286,12 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
   end
 
   test "extract_buyer_name extracts from eng array" do
-    field = { "eng" => ["European Maritime Safety Agency"] }
+    field = { "eng" => [ "European Maritime Safety Agency" ] }
     assert_equal "European Maritime Safety Agency", @client.send(:extract_buyer_name, field)
   end
 
   test "extract_buyer_name falls back to first language" do
-    field = { "por" => ["Câmara Municipal de Lisboa"] }
+    field = { "por" => [ "Câmara Municipal de Lisboa" ] }
     assert_equal "Câmara Municipal de Lisboa", @client.send(:extract_buyer_name, field)
   end
 
