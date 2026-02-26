@@ -55,3 +55,10 @@
 
 # Yarn
 yarn-error.log
+
+# Transparencia prototype — exclude large/generated files
+/transparencia/node_modules/
+/transparencia/dados_base/
+/transparencia/dist/
+/transparencia/output/
+/transparencia/files.zip
