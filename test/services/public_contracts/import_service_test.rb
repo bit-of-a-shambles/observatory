@@ -119,6 +119,15 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
     adapter2.verify
   end
 
+  test "call skips contract when object is blank" do
+    attrs = build_contract_attrs("object" => "")
+    with_mocked_adapter([ attrs ]) do |ds, _|
+      assert_no_difference "Contract.count" do
+        PublicContracts::ImportService.new(ds).call
+      end
+    end
+  end
+
   test "call skips contract when contracting_entity has blank tax_id" do
     attrs = build_contract_attrs(
       "contracting_entity" => { "tax_identifier" => "", "name" => "X" }
@@ -150,6 +159,75 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
         PublicContracts::ImportService.new(ds).call
       end
     end
+  end
+
+  # ── call_all ───────────────────────────────────────────────────────────────
+
+  test "call_all paginates until adapter returns empty batch" do
+    attrs = build_contract_attrs
+    adapter = Object.new
+    call_count = 0
+    adapter.define_singleton_method(:total_count) { 1 }
+    adapter.define_singleton_method(:fetch_contracts) do |page: 1, limit: 100|
+      call_count += 1
+      call_count == 1 ? [ attrs ] : []
+    end
+    ds = data_sources(:portal_base)
+    ds.stub(:adapter, adapter) do
+      assert_difference "Contract.count", 1 do
+        PublicContracts::ImportService.new(ds).call_all(progress: nil)
+      end
+      assert_equal 1, ds.reload.record_count
+      assert ds.active?
+    end
+  end
+
+  test "call_all prints progress when progress object and total_count are provided" do
+    attrs = build_contract_attrs
+    adapter = Object.new
+    call_count = 0
+    adapter.define_singleton_method(:total_count) { 1 }
+    adapter.define_singleton_method(:fetch_contracts) do |page: 1, limit: 100|
+      call_count += 1
+      call_count == 1 ? [ attrs ] : []
+    end
+    progress = StringIO.new
+    ds = data_sources(:portal_base)
+    ds.stub(:adapter, adapter) do
+      PublicContracts::ImportService.new(ds).call_all(progress: progress)
+    end
+    assert_match(/imported/, progress.string)
+    assert_match(/Done/, progress.string)
+  end
+
+  test "call_all sleeps between pages when adapter responds to inter_page_delay" do
+    attrs = build_contract_attrs
+    adapter = Object.new
+    call_count = 0
+    adapter.define_singleton_method(:total_count)      { 1 }
+    adapter.define_singleton_method(:inter_page_delay) { 0 }
+    adapter.define_singleton_method(:fetch_contracts) do |page: 1, limit: 100|
+      call_count += 1
+      call_count == 1 ? [ attrs ] : []
+    end
+    ds = data_sources(:portal_base)
+    ds.stub(:adapter, adapter) do
+      assert_difference "Contract.count", 1 do
+        PublicContracts::ImportService.new(ds).call_all(progress: nil)
+      end
+    end
+  end
+
+  test "call_all sets status to error when adapter raises" do
+    adapter = Object.new
+    adapter.define_singleton_method(:total_count) { raise RuntimeError, "boom" }
+    ds = data_sources(:portal_base)
+    ds.stub(:adapter, adapter) do
+      assert_raises(RuntimeError) do
+        PublicContracts::ImportService.new(ds).call_all(progress: nil)
+      end
+    end
+    assert ds.reload.error?
   end
 
   # ── error handling ─────────────────────────────────────────────────────────

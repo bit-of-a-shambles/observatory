@@ -26,12 +26,13 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
     resp
   end
 
-  def fake_error(code = "500", message = "Server Error")
+  def fake_error(code = "500", message = "Server Error", headers = {})
     resp = Object.new
     resp.define_singleton_method(:is_a?) { |_klass| false }
     resp.define_singleton_method(:body)  { "" }
     resp.define_singleton_method(:code)  { code }
     resp.define_singleton_method(:message) { message }
+    resp.define_singleton_method(:[]) { |key| headers[key] }
     resp
   end
 
@@ -119,6 +120,22 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
       result = @client.fetch_contracts
       assert_equal 1, result.size
       assert_equal "2026/S001-001", result.first["external_id"]
+    end
+    mock.verify
+  end
+
+  test "total_count returns totalNoticeCount from search response" do
+    mock = mock_http_post(fake_success(NOTICES_PAYLOAD.to_json))
+    Net::HTTP.stub(:new, mock) do
+      assert_equal 32000, @client.total_count
+    end
+    mock.verify
+  end
+
+  test "total_count returns 0 when search fails" do
+    mock = mock_http_post(fake_error)
+    Net::HTTP.stub(:new, mock) do
+      assert_equal 0, @client.total_count
     end
     mock.verify
   end
@@ -297,6 +314,31 @@ class PublicContracts::EU::TedClientTest < ActiveSupport::TestCase
 
   test "extract_buyer_name returns Unknown for nil" do
     assert_equal "Unknown", @client.send(:extract_buyer_name, nil)
+  end
+
+  test "inter_page_delay returns the configured default" do
+    assert_equal PublicContracts::EU::TedClient::DEFAULT_INTER_PAGE_DELAY, @client.inter_page_delay
+  end
+
+  test "search retries on 429 and returns result after wait" do
+    call_count   = 0
+    success_resp = fake_success(NOTICES_PAYLOAD.to_json)
+    rate_limited = fake_error("429", "Too Many Requests", { "Retry-After" => "0" })
+
+    stateful = Object.new
+    stateful.define_singleton_method(:use_ssl=)      { |_| }
+    stateful.define_singleton_method(:open_timeout=) { |_| }
+    stateful.define_singleton_method(:read_timeout=) { |_| }
+    stateful.define_singleton_method(:request) do |_req|
+      call_count += 1
+      call_count == 1 ? rate_limited : success_resp
+    end
+
+    Net::HTTP.stub(:new, stateful) do
+      result = @client.search(query: "test")
+      assert_equal NOTICES_PAYLOAD, result
+    end
+    assert_equal 2, call_count
   end
 
   test "rails_log falls back to warn when Rails logger is nil" do

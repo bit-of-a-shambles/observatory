@@ -7,7 +7,7 @@ module PublicContracts
     end
 
     def call
-      contracts = @ds.adapter.fetch_contracts
+      contracts = adapter.fetch_contracts
       contracts.each { |attrs| import_contract(attrs) }
       @ds.update!(status: :active, last_synced_at: Time.current, record_count: contracts.size)
     rescue => e
@@ -15,9 +15,59 @@ module PublicContracts
       raise
     end
 
+    # Paginates through every page until the adapter returns no more records.
+    # The adapter must support fetch_contracts(page:, limit:).
+    # Optional: if the adapter responds to #total_count, it's used only for
+    # progress reporting — not to control the loop.
+    #
+    # The adapter is memoized for the lifetime of this call so that stateful
+    # adapters (e.g. TedClient scroll token, SnsClient year-window index) retain
+    # their internal position across batches.
+    def call_all(limit: 100, progress: $stdout)
+      total_known  = adapter.respond_to?(:total_count) ? adapter.total_count : nil
+      imported     = 0
+      page         = 1
+
+      loop do
+        batch = adapter.fetch_contracts(page: page, limit: limit)
+        break if batch.empty?
+
+        batch.each { |attrs| import_contract(attrs) }
+        imported += batch.size
+        page     += 1
+
+        # Pace requests for rate-limited adapters (e.g. TED API)
+        sleep adapter.inter_page_delay if adapter.respond_to?(:inter_page_delay)
+
+        if progress && total_known
+          progress.print "\r  #{imported}/#{total_known} imported (page #{page - 1})"
+          progress.flush
+        end
+      end
+
+      progress&.puts "\n  Done — #{imported} records"
+      @ds.update!(status: :active, last_synced_at: Time.current, record_count: imported)
+    rescue => e
+      @ds.update!(status: :error)
+      raise
+    end
+
     private
 
+    # Memoized adapter — critical for stateful adapters (TedClient scroll token,
+    # SnsClient year-window index) that need the same instance across all batches.
+    def adapter
+      @adapter ||= @ds.adapter
+    end
+
+    # Dedup strategy: the DB unique constraint on (external_id, country_code)
+    # prevents duplicate contracts both within a single source (on re-import) and
+    # across sources that share the same external_id namespace (e.g. Portal BASE and
+    # QuemFatura.pt both use idcontrato). find_or_create_by! returns the existing
+    # record silently when a duplicate is encountered — no error, no overwrite.
     def import_contract(attrs)
+      return if attrs["object"].blank?
+
       contracting = find_or_create_entity(
         attrs.dig("contracting_entity", "tax_identifier"),
         attrs.dig("contracting_entity", "name"),

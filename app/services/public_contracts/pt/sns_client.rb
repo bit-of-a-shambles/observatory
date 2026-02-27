@@ -16,6 +16,12 @@ module PublicContracts
     # API docs: https://transparencia.sns.gov.pt/explore/dataset/portal-base/api/
     # Total records (2026-02): ~43,000 (health-sector contracts)
     #
+    # OpenDataSoft hard limit: offset + limit ≤ 10,000 per request.
+    # Workaround: year-windowed queries — each year has < 10 000 records, so
+    # we iterate through years 2010-current plus a pre-2010 bucket and a
+    # null-date bucket. The fetch_contracts method maintains internal window
+    # state so ImportService#call_all can drive pagination transparently.
+    #
     class SnsClient
       SOURCE_NAME  = "Portal da Transparência SNS"
       COUNTRY_CODE = "PT"
@@ -26,6 +32,10 @@ module PublicContracts
       # OpenDataSoft records API hard limit is 100 per request.
       MAX_LIMIT = 100
 
+      # Year windows for pagination bypass.  The "pre_2010" and "null_date"
+      # synthetic labels are resolved to ODSQL where-clauses in build_windows.
+      START_YEAR = 2010
+
       def initialize(config = {})
         @page_size = [ config.fetch("page_size", MAX_LIMIT).to_i, MAX_LIMIT ].min
       end
@@ -33,13 +43,43 @@ module PublicContracts
       def country_code = COUNTRY_CODE
       def source_name  = SOURCE_NAME
 
+      # Fetches contracts using year-windowed queries to bypass the 10 000-record
+      # pagination cap.  Call with page: 1 to (re)start the scroll; subsequent
+      # calls continue through the window queue.
+      #
+      # The page parameter signals intent (1 = start fresh, N = continue) but
+      # the actual position is tracked via @sns_window_idx / @sns_window_offset.
       def fetch_contracts(page: 1, limit: MAX_LIMIT)
-        effective_limit = [ limit, MAX_LIMIT ].min
-        offset          = (page - 1) * effective_limit
-        data            = get_records(limit: effective_limit, offset: offset)
-        return [] unless data
+        if page == 1
+          @sns_windows       = build_windows
+          @sns_window_idx    = 0
+          @sns_window_offset = 0
+        end
 
-        Array(data["results"]).filter_map { |r| normalize(r) }
+        effective_limit = [ limit, MAX_LIMIT ].min
+
+        while @sns_window_idx < @sns_windows.length
+          where_clause = @sns_windows[@sns_window_idx]
+          data         = get_records(limit: effective_limit, offset: @sns_window_offset,
+                                     where: where_clause)
+          results      = Array(data&.dig("results"))
+
+          if results.empty?
+            @sns_window_idx    += 1
+            @sns_window_offset  = 0
+            next
+          end
+
+          @sns_window_offset += results.size
+          if results.size < effective_limit
+            @sns_window_idx    += 1
+            @sns_window_offset  = 0
+          end
+
+          return results.filter_map { |r| normalize(r) }
+        end
+
+        []
       end
 
       def total_count
@@ -49,9 +89,18 @@ module PublicContracts
 
       private
 
-      def get_records(limit:, offset: 0)
-        uri       = URI(RECORDS_URL)
-        uri.query = URI.encode_www_form(limit: limit, offset: offset)
+      # Ordered list of ODSQL where-clauses covering the full dataset without
+      # any single window exceeding 10 000 records.
+      def build_windows
+        years = (START_YEAR..Date.current.year).map { |y| "year(data_de_publicacao)=#{y}" }
+        [ "data_de_publicacao < '#{START_YEAR}-01-01'" ] + years + [ "data_de_publicacao is null" ]
+      end
+
+      def get_records(limit:, offset: 0, where: nil)
+        uri    = URI(RECORDS_URL)
+        params = { limit: limit, offset: offset }
+        params[:where] = where if where
+        uri.query      = URI.encode_www_form(params)
 
         http              = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl      = true

@@ -28,13 +28,23 @@ module PublicContracts
       # Maps TED ISO 3166-1 alpha-3 codes to alpha-2 used by the domain model
       COUNTRY_MAP = { "PRT" => "PT", "ESP" => "ES", "FRA" => "FR", "DEU" => "DE" }.freeze
 
+      # TED API rate limits: ~10 req/min without key, ~50/min with key.
+      # inter_page_delay paces call_all so consecutive pages don't trigger 429s.
+      DEFAULT_INTER_PAGE_DELAY = 1.5  # seconds between paginated fetches
+      DEFAULT_MAX_RETRIES      = 3
+      # Iteration mode maximum records per request (API hard cap)
+      MAX_SCROLL_LIMIT         = 250
+
       def initialize(config = {})
-        @api_key      = config.fetch("api_key", ENV["TED_API_KEY"])
-        @country_code = config.fetch("country_code", "PRT")  # ISO 3166-1 alpha-3 for EQL queries
+        @api_key            = config.fetch("api_key", ENV["TED_API_KEY"])
+        @country_code       = config.fetch("country_code", "PRT")  # ISO 3166-1 alpha-3 for EQL queries
+        @inter_page_delay   = config.fetch("inter_page_delay", DEFAULT_INTER_PAGE_DELAY).to_f
+        @max_retries        = config.fetch("max_retries", DEFAULT_MAX_RETRIES).to_i
       end
 
-      def country_code = "EU"
-      def source_name  = SOURCE_NAME
+      def country_code      = "EU"
+      def source_name       = SOURCE_NAME
+      def inter_page_delay  = @inter_page_delay
 
       def search(query:, page: 1, limit: 10, fields: DEFAULT_FIELDS)
         body = { query: query, fields: fields, page: page, limit: limit }
@@ -51,9 +61,44 @@ module PublicContracts
         search(query: q, page: page, limit: limit)
       end
 
-      def fetch_contracts(page: 1, limit: 50)
-        result = search(query: "organisation-country-buyer=#{@country_code}", page: page, limit: limit)
-        Array(result&.dig("notices")).map { |notice| normalize(notice) }
+      # Fetches contracts using TED's scroll/iteration mode, which has no
+      # 15 000-record pagination cap (unlike the regular page-based search).
+      #
+      # Maintains @scroll_token and @scroll_exhausted across calls so that
+      # ImportService#call_all can drive pagination with incrementing page numbers
+      # without knowing about the token internals:
+      #   page == 1  → resets state and starts a fresh scroll
+      #   page > 1   → continues from the stored token
+      #   no token   → returns [] to signal end-of-results
+      def fetch_contracts(page: 1, limit: MAX_SCROLL_LIMIT)
+        if page == 1
+          @scroll_token     = nil
+          @scroll_exhausted = false
+        end
+
+        return [] if @scroll_exhausted
+
+        body = {
+          query:          "organisation-country-buyer=#{@country_code}",
+          fields:         DEFAULT_FIELDS,
+          limit:          [limit, MAX_SCROLL_LIMIT].min,
+          paginationMode: "ITERATION"
+        }
+        body[:iterationNextToken] = @scroll_token if @scroll_token
+
+        result = post("/#{API_VERSION}/notices/search", body)
+        return [] unless result
+
+        notices = Array(result["notices"])
+        @scroll_token     = result["iterationNextToken"]
+        @scroll_exhausted = @scroll_token.nil?
+
+        notices.map { |notice| normalize(notice) }
+      end
+
+      def total_count
+        result = search(query: "organisation-country-buyer=#{@country_code}", limit: 1)
+        result&.dig("totalNoticeCount") || 0
       end
 
       private
@@ -106,12 +151,12 @@ module PublicContracts
         field["eng"] || field["por"] || field.values.first
       end
 
-      def post(path, body)
+      def post(path, body, attempt: 1)
         uri  = URI("#{BASE_URL}#{path}")
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl      = true
         http.open_timeout = 15
-        http.read_timeout = 30
+        http.read_timeout = 60
 
         request = Net::HTTP::Post.new(uri)
         request["Content-Type"] = "application/json"
@@ -125,12 +170,24 @@ module PublicContracts
         when Net::HTTPSuccess
           JSON.parse(response.body)
         else
-          log_error(response)
-          nil
+          if response.code.to_i == 429 && attempt <= @max_retries
+            wait = response["Retry-After"]&.to_i || 10
+            rails_log("[TedClient] Rate limited (429). Waiting #{wait}s (attempt #{attempt}/#{@max_retries})")
+            rate_limit_wait(wait)
+            post(path, body, attempt: attempt + 1)
+          else
+            log_error(response)
+            nil
+          end
         end
       rescue StandardError => e
         log_exception(e)
         nil
+      end
+
+      # Separated from sleep so tests can stub without affecting Kernel
+      def rate_limit_wait(seconds)
+        sleep seconds
       end
 
       def log_error(response)
