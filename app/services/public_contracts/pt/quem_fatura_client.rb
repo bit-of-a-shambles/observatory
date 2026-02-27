@@ -28,7 +28,7 @@ module PublicContracts
     #   "cf_clearance"  — Cloudflare clearance cookie value (required for live requests)
     #   "page_size"     — records per request (default/max: 100)
     #   "fetch_details" — when true, fetches the detail endpoint for each contract
-    #                     to populate celebration_date, location, cpv_code (default: false)
+    #                     to populate richer fields (default: true)
     #
     class QuemFaturaClient
       SOURCE_NAME  = "QuemFatura.pt"
@@ -44,7 +44,7 @@ module PublicContracts
         @cf_clearance  = config.fetch("cf_clearance", nil)
         @user_agent    = config.fetch("user_agent", DEFAULT_USER_AGENT)
         @page_size     = [ config.fetch("page_size", MAX_LIMIT).to_i, MAX_LIMIT ].min
-        @fetch_details = config.fetch("fetch_details", false)
+        @fetch_details = config.fetch("fetch_details", true)
       end
 
       def country_code = COUNTRY_CODE
@@ -117,11 +117,13 @@ module PublicContracts
           "external_id"        => contract["idcontrato"].to_s,
           "object"             => contract["objectoContrato"].to_s.strip,
           "country_code"       => COUNTRY_CODE,
+          "contract_type"      => extract_contract_type(contract),
           "procedure_type"     => contract["tipoprocedimento"].to_s.strip,
           "publication_date"   => parse_date(contract["dataPublicacao"]),
           "celebration_date"   => parse_date(contract["dataCelebracaoContrato"]),
           "base_price"         => parse_decimal(contract["precoContratual"]),
-          "cpv_code"           => extract_cpv(contract["cpvs"]),
+          "total_effective_price" => extract_total_effective_price(contract),
+          "cpv_code"           => extract_cpv(first_present(contract, "cpvs", "cpv")),
           "location"           => contract["localExecucao"].to_s.strip.presence,
           "contracting_entity" => build_authority(contract),
           "winners"            => build_winners(contract)
@@ -148,6 +150,23 @@ module PublicContracts
       def extract_cpv(value)
         return nil if value.to_s.strip.empty?
         value.to_s.split(/[\s-]/, 2).first.strip
+      end
+
+      def extract_contract_type(contract)
+        first_present(contract, "tipocontrato", "tipoContrato", "tipo_de_contrato", "contractType")&.to_s&.strip&.presence
+      end
+
+      def extract_total_effective_price(contract)
+        parse_decimal(first_present(contract, "precoEfetivo", "preco_efetivo", "preco_total_efetivo",
+                                    "precoTotalEfetivo", "precoTotal"))
+      end
+
+      def first_present(hash, *keys)
+        keys.each do |key|
+          value = hash[key]
+          return value if value.present?
+        end
+        nil
       end
 
       def parse_date(value)

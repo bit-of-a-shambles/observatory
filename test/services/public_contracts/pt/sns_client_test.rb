@@ -137,7 +137,7 @@ class PublicContracts::PT::SnsClientTest < ActiveSupport::TestCase
     mock = mock_http(fake_success(PAYLOAD.to_json))
     Net::HTTP.stub(:new, mock) do
       result = @client.fetch_contracts
-      assert_equal "33000000-0", result.first["cpv_code"]
+      assert_equal "33000000", result.first["cpv_code"]
     end
     mock.verify
   end

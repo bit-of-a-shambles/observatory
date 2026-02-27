@@ -136,7 +136,7 @@ module PublicContracts
           "base_price"            => parse_decimal(record["preco_contratual"]),
           "total_effective_price" => parse_decimal(record["preco_total_efetivo"]),
           "cpv_code"              => extract_cpv(record["cpvs"]),
-          "location"              => record["local_de_execucao"].to_s.strip,
+          "location"              => record["local_de_execucao"].to_s.strip.presence,
           "contracting_entity"    => build_authority(record),
           "winners"               => build_winners(record)
         }
@@ -179,7 +179,8 @@ module PublicContracts
       # SNS CPV format: "33000000-0, Description text"
       def extract_cpv(value)
         return nil if value.to_s.strip.empty?
-        value.to_s.split(",").first.strip
+        raw_code = value.to_s.split(",").first.to_s.strip
+        raw_code[/\A\d{8}/]
       end
 
       def split_field(value)

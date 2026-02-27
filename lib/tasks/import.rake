@@ -3,7 +3,7 @@
 namespace :import do
   desc "Import one page from every active DataSource (fast smoke-test)"
   task once: :environment do
-    DataSource.where(active: true).each do |ds|
+    DataSource.active.each do |ds|
       puts "  #{ds.adapter_class}..."
       PublicContracts::ImportService.new(ds).call
       puts "    #{ds.reload.record_count} records, status: #{ds.status}"
@@ -15,7 +15,7 @@ namespace :import do
     sources = if args[:adapter].present?
       DataSource.where(adapter_class: args[:adapter])
     else
-      DataSource.where(active: true)
+      DataSource.active
     end
 
     sources.each do |ds|

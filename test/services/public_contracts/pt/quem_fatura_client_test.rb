@@ -47,7 +47,7 @@ class PublicContracts::PT::QuemFaturaClientTest < ActiveSupport::TestCase
   end
 
   setup do
-    @client = PublicContracts::PT::QuemFaturaClient.new
+    @client = PublicContracts::PT::QuemFaturaClient.new("fetch_details" => false)
   end
 
   test "country_code is PT" do
@@ -205,6 +205,11 @@ class PublicContracts::PT::QuemFaturaClientTest < ActiveSupport::TestCase
     assert_instance_of PublicContracts::PT::QuemFaturaClient, client
   end
 
+  test "fetch_details defaults to true for richer imports" do
+    client = PublicContracts::PT::QuemFaturaClient.new
+    assert client.instance_variable_get(:@fetch_details)
+  end
+
   test "accepts page_size from config" do
     client = PublicContracts::PT::QuemFaturaClient.new("page_size" => "50")
     assert_instance_of PublicContracts::PT::QuemFaturaClient, client
@@ -255,5 +260,15 @@ class PublicContracts::PT::QuemFaturaClientTest < ActiveSupport::TestCase
       assert_equal "Test",   result["objectoContrato"]
     end
     mock.verify
+  end
+
+  test "normalize maps contract_type and total_effective_price from detail-like fields" do
+    contract = RECORD.merge(
+      "tipoContrato" => "Aquisição de Serviços",
+      "precoTotalEfetivo" => "27700.55"
+    )
+    normalized = @client.send(:normalize, contract)
+    assert_equal "Aquisição de Serviços", normalized["contract_type"]
+    assert_equal BigDecimal("27700.55"), normalized["total_effective_price"]
   end
 end
