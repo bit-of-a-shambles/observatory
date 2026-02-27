@@ -1,6 +1,6 @@
 [🇵🇹 Versão em Português](README.pt.md)
 
-# Integrity Observatory
+# Open Tender Watch
 
 A Rails 8 app that monitors public procurement data across multiple countries to flag corruption risk and abuse patterns. The output is cases for journalists and auditors to investigate, not conclusions.
 
@@ -124,7 +124,7 @@ See `AGENTS.md` for the complete standard hash format, field-by-field documentat
 
 All pull requests are welcome. The project backlog lives on GitHub Issues, sorted by difficulty and priority so you can find something to work on quickly:
 
-**[View open issues →](https://github.com/bit-of-a-shambles/observatory/issues)**
+**[View open issues →](https://github.com/bit-of-a-shambles/open-tender-watch/issues)**
 
 Issues are labelled by `difficulty: easy / medium / hard`, `type: data / flag / ui / infra`, and `priority: now / next / planned`. The `good first issue` label marks the most self-contained tasks.
 
@@ -155,8 +155,8 @@ SimpleCov prints line coverage at the end of the run. If it drops below 100%, ad
 This is a Ruby on Rails 8 application. Requirements: Ruby 3.3.0, Bundler, SQLite.
 
 ```bash
-git clone https://github.com/bit-of-a-shambles/observatory.git
-cd observatory
+git clone https://github.com/bit-of-a-shambles/open-tender-watch.git
+cd open-tender-watch
 bundle install
 bin/rails db:create db:migrate db:seed
 bin/dev          # starts Rails + Tailwind watcher
@@ -218,7 +218,7 @@ You do not need to write code to contribute:
 - **Test the data** — pick a sample of contracts and verify them against the original portal (Portal BASE, TED). Report discrepancies as issues.
 - **Translate** — locale files are in `config/locales/`. A new language is a single YAML file. The README files will also need translating — open an issue to coordinate.
 
-[Open an issue →](https://github.com/bit-of-a-shambles/observatory/issues/new)
+[Open an issue →](https://github.com/bit-of-a-shambles/open-tender-watch/issues/new)
 
 ## Roadmap
 
@@ -237,4 +237,4 @@ You do not need to write code to contribute:
 - `AGENTS.md` — domain model, data sources, indicator catalogue, ETL pattern, coding standards
 - `DESIGN.md` — UI/UX design system
 - `docs/plans/` — implementation plans and research blueprints
-- [GitHub Issues](https://github.com/bit-of-a-shambles/observatory/issues) — canonical backlog
+- [GitHub Issues](https://github.com/bit-of-a-shambles/open-tender-watch/issues) — canonical backlog

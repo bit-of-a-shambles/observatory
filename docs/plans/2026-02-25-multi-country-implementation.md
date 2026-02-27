@@ -13,7 +13,7 @@
 ## Pre-flight check
 
 ```bash
-cd /Users/duartemartins/Code/observatorio
+cd /Users/duartemartins/Code/open-tender-watch
 bundle exec rails test 2>&1 | tail -5
 ```
 Expected: 9 runs, 4 errors (fixture uniqueness issue — fixed in Task 1).

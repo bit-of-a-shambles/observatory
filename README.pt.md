@@ -1,6 +1,6 @@
 [🇬🇧 English version](README.md)
 
-# Observatório de Integridade
+# Open Tender Watch
 
 Uma aplicação Rails 8 que monitoriza dados de contratação pública em vários países para identificar padrões de risco de corrupção. O resultado são casos para jornalistas e auditores investigarem — não conclusões.
 
@@ -120,7 +120,7 @@ Consulte `AGENTS.md` para o formato completo do hash padronizado, documentação
 
 Todos os pull requests são bem-vindos. O backlog do projeto está nos GitHub Issues, organizado por dificuldade e prioridade:
 
-**[Ver issues abertas →](https://github.com/bit-of-a-shambles/observatory/issues)**
+**[Ver issues abertas →](https://github.com/bit-of-a-shambles/open-tender-watch/issues)**
 
 As issues estão etiquetadas por `difficulty: easy / medium / hard`, `type: data / flag / ui / infra` e `priority: now / next / planned`. A etiqueta `good first issue` marca as tarefas mais autónomas para quem está a começar.
 
@@ -149,8 +149,8 @@ bundle exec rails test
 Esta é uma aplicação Ruby on Rails 8. Requisitos: Ruby 3.3.0, Bundler, SQLite.
 
 ```bash
-git clone https://github.com/bit-of-a-shambles/observatory.git
-cd observatory
+git clone https://github.com/bit-of-a-shambles/open-tender-watch.git
+cd open-tender-watch
 bundle install
 bin/rails db:create db:migrate db:seed
 bin/dev          # inicia Rails + Tailwind watcher
@@ -210,7 +210,7 @@ Não é necessário escrever código para contribuir:
 - **Testar os dados** — verificar uma amostra de contratos no portal de origem (Portal BASE, TED) e reportar discrepâncias.
 - **Traduzir** — os ficheiros de localização estão em `config/locales/`. Um novo idioma é apenas um ficheiro YAML; não é necessário código.
 
-[Abrir uma issue →](https://github.com/bit-of-a-shambles/observatory/issues/new)
+[Abrir uma issue →](https://github.com/bit-of-a-shambles/open-tender-watch/issues/new)
 
 ## Roteiro
 
@@ -229,4 +229,4 @@ Não é necessário escrever código para contribuir:
 - `AGENTS.md` — modelo de domínio, fontes de dados, catálogo de indicadores, padrão ETL, normas de código
 - `DESIGN.md` — sistema de design UI/UX
 - `docs/plans/` — planos de implementação e blueprints de investigação
-- [GitHub Issues](https://github.com/bit-of-a-shambles/observatory/issues) — backlog canónico do projeto
+- [GitHub Issues](https://github.com/bit-of-a-shambles/open-tender-watch/issues) — backlog canónico do projeto

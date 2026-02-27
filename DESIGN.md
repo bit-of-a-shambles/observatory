@@ -1,4 +1,4 @@
-# Design Doc: Observatório de Integridade (Rails + Hotwire)
+# Design Doc: Open Tender Watch (Rails + Hotwire)
 
 ## Overview
 A web application for the automated crossing of Portuguese public databases to detect irregularities in public procurement.
@@ -13,7 +13,7 @@ A web application for the automated crossing of Portuguese public databases to d
 ### 1. Header
 - **Status Indicator:** "LIVE" with pulsing red dot.
 - **Prototype Badge:** Indicating CSV/Manual data source.
-- **Title:** "Observatório de Integridade" with a gradient effect.
+- **Title:** "Open Tender Watch" with a gradient effect.
 - **Subtitle:** Description of the tool's purpose.
 
 ### 2. Global Stats Bar

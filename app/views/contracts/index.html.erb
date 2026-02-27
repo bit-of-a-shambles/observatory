@@ -32,9 +32,25 @@
           { selected: params[:country] },
           class: "bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
     </div>
+    <div>
+      <%= f.select :flagged,
+          [
+            [t("contracts.index.all_flag_states"), ""],
+            [t("contracts.index.flagged_only"), "only"],
+            [t("contracts.index.unflagged_only"), "none"]
+          ],
+          { selected: params[:flagged] },
+          class: "bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
+    </div>
+    <div>
+      <%= f.select :flag_type,
+          [[t("contracts.index.all_flags"), ""]] + @flag_types.map { |flag_type| [flag_type, flag_type] },
+          { selected: params[:flag_type] },
+          class: "bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
+    </div>
     <%= f.submit t("contracts.index.filter"),
         class: "bg-[#c8a84e1a] border border-[#c8a84e44] text-[#c8a84e] font-mono text-xs tracking-widest px-4 py-2 rounded hover:bg-[#c8a84e33] transition-all cursor-pointer" %>
-    <% if params[:q].present? || params[:procedure_type].present? || params[:country].present? %>
+    <% if params[:q].present? || params[:procedure_type].present? || params[:country].present? || params[:flagged].present? || params[:flag_type].present? %>
       <%= link_to t("contracts.index.clear"), contracts_path,
           class: "border border-white/10 text-white/30 font-mono text-xs tracking-widest px-4 py-2 rounded hover:text-white/50 transition-all" %>
     <% end %>
@@ -65,6 +81,18 @@
             <div class="font-mono text-[10px] text-white/25 mt-1">
               <%= contract.country_code %> · <%= contract.external_id %>
             </div>
+            <% if contract.flags.any? %>
+              <div class="mt-1.5 flex flex-wrap gap-1">
+                <% contract.flags.first(2).each do |flag| %>
+                  <span class="font-mono text-[9px] tracking-wide text-[#ff6666] bg-[#ff444412] border border-[#ff444433] px-1.5 py-0.5 rounded">
+                    <%= flag.flag_type %>
+                  </span>
+                <% end %>
+                <% if contract.flags.size > 2 %>
+                  <span class="font-mono text-[9px] text-white/35">+<%= contract.flags.size - 2 %></span>
+                <% end %>
+              </div>
+            <% end %>
           </div>
           <div class="text-xs text-white/50 truncate pr-4 pt-0.5">
             <%= contract.contracting_entity&.name %>

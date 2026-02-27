@@ -1,8 +1,8 @@
-# Observatório de Integridade — Context & Guidelines
+# Open Tender Watch — Context & Guidelines
 
 ## Project Overview
 
-The **Observatório de Integridade**/**Integrity Observatory** is a Rails 8 application that monitors Portuguese (and broader European) public procurement data to detect corruption risk, abuse patterns, and conflicts of interest. It is designed for journalists, auditors, and civic watchdogs.
+The **Open Tender Watch** is a Rails 8 application that monitors Portuguese (and broader European) public procurement data to detect corruption risk, abuse patterns, and conflicts of interest. It is designed for journalists, auditors, and civic watchdogs.
 
 The approach is **risk scoring, not accusation**. The system surfaces cases for audit or journalistic review with explicit confidence levels — it does not produce conclusions.
 
@@ -172,7 +172,7 @@ RCBE beneficial ownership linkage. Access requires legal person authentication a
 ## Backlog
 
 The canonical task list is maintained as GitHub Issues:
-**https://github.com/bit-of-a-shambles/observatory/issues**
+**https://github.com/bit-of-a-shambles/open-tender-watch/issues**
 
 Issues are labelled by:
 - **priority:** `priority: now` / `priority: next` / `priority: planned`

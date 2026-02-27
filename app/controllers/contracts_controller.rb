@@ -6,7 +6,7 @@ class ContractsController < ApplicationController
   PER_PAGE = 50
 
   def index
-    scope = Contract.includes(:contracting_entity, :winners, :data_source)
+    scope = Contract.includes(:contracting_entity, :winners, :data_source, :flags)
 
     if params[:q].present?
       scope = scope.where("object LIKE ?", "%#{params[:q]}%")
@@ -20,6 +20,17 @@ class ContractsController < ApplicationController
       scope = scope.where(country_code: params[:country])
     end
 
+    case params[:flagged]
+    when "only"
+      scope = scope.joins(:flags).distinct
+    when "none"
+      scope = scope.left_outer_joins(:flags).where(flags: { id: nil })
+    end
+
+    if params[:flag_type].present?
+      scope = scope.joins(:flags).where(flags: { flag_type: params[:flag_type] }).distinct
+    end
+
     @total        = scope.count
     @page         = [ params[:page].to_i, 1 ].max
     @total_pages  = (@total.to_f / PER_PAGE).ceil
@@ -28,6 +39,7 @@ class ContractsController < ApplicationController
 
     @procedure_types = Contract.distinct.pluck(:procedure_type).compact.sort
     @countries       = Contract.distinct.pluck(:country_code).compact.sort
+    @flag_types      = Flag.distinct.order(:flag_type).pluck(:flag_type)
   end
 
   def show

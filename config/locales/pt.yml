@@ -1,6 +1,6 @@
 pt:
   app:
-    name: "Observatório de Integridade"
+    name: "Open Tender Watch"
     tagline: "Cruzamento automatizado de bases de dados públicas portuguesas para deteção de irregularidades"
     live: "AO VIVO"
     prototype: "Protótipo · Rails 8 + Hotwire"
@@ -23,12 +23,31 @@ pt:
       sources: "Fontes"
     exposure:
       label: "EXPOSIÇÃO TOTAL"
-      irregularities:
-        one: "%{count} irregularidade"
-        other: "%{count} irregularidades"
-      sources: "%{count} fontes"
+      contracts:
+        one: "%{count} contrato sinalizado"
+        other: "%{count} contratos sinalizados"
+      companies:
+        one: "%{count} empresa distinta"
+        other: "%{count} empresas distintas"
+      public_entities:
+        one: "%{count} entidade pública distinta"
+        other: "%{count} entidades públicas distintas"
+    entity_exposure:
+      heading: "Exposição de Entidades por Sinal"
+      subheading: "Exposição agregada por entidade adjudicante e sinal ativo"
+      flag: "SINAL"
+      all_flags: "Todos os sinais"
+      sort: "ORDENAR"
+      sort_value: "Valor de exposição"
+      sort_count: "Contagem de exposição"
+      col_flag: "SINAL"
+      col_entity: "ENTIDADE"
+      col_value: "VALOR DE EXPOSIÇÃO"
+      col_count: "CONTAGEM"
+      empty: "Sem entidades sinalizadas para este filtro."
     insights:
       pattern: "Padrão"
+      empty: "Ainda não existem sinais pontuados. Execute as ações de scoring para preencher este painel."
     crossings:
       heading: "Ligação de entidades via NIF / NIPC"
       subheading: "Identificador único como chave de cruzamento entre bases de dados"
@@ -43,6 +62,7 @@ pt:
       subheading: "Bases de dados públicas portuguesas e europeias"
       records: "%{count} registos"
       synced: "sincronizado %{date}"
+      unknown: "Fonte desconhecida"
 
   contracts:
     index:
@@ -53,6 +73,10 @@ pt:
       search_placeholder: "Pesquisar descrição do contrato…"
       all_procedures: "Todos os procedimentos"
       all_countries: "Todos os países"
+      all_flag_states: "Todos os contratos"
+      flagged_only: "Apenas sinalizados"
+      unflagged_only: "Apenas sem sinalização"
+      all_flags: "Todos os sinais"
       filter: "Filtrar"
       clear: "Limpar"
       col_contract: "Contrato"

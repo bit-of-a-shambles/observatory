@@ -31,7 +31,7 @@
   <div class="flex border-b border-white/10 mb-6">
     <button data-dashboard-target="tab" data-tab="insights" data-action="click->dashboard#switchTab"
             class="font-mono text-xs tracking-widest uppercase bg-none border-none px-5 py-3 cursor-pointer transition-all font-semibold text-[#c8a84e] border-b-2 border-[#c8a84e]">
-      <%= t("dashboard.tabs.insights") %> <%= @insights.size %>
+      <%= t("dashboard.tabs.insights") %> <%= @insights_count %>
     </button>
     <button data-dashboard-target="tab" data-tab="cruzamentos" data-action="click->dashboard#switchTab"
             class="font-mono text-xs tracking-widest uppercase bg-none border-none px-5 py-3 cursor-pointer transition-all font-semibold text-white/30 border-b-2 border-transparent">
@@ -55,62 +55,76 @@
       </div>
       <div class="flex justify-between items-baseline">
         <span class="font-['Space_Grotesk'] text-5xl font-bold text-[#e8e0d4] tracking-tighter">
-          €31.1M
+          <%= number_to_currency(@flagged_total_exposure || 0, unit: "€", delimiter: ",", separator: ".", format: "%u%n", precision: 2) %>
         </span>
         <div class="text-right font-mono text-sm">
-          <div class="text-white/50"><%= t("dashboard.exposure.irregularities", count: @insights.size) %></div>
-          <div class="text-white/35"><%= t("dashboard.exposure.sources", count: 12) %></div>
+          <div class="text-white/50"><%= t("dashboard.exposure.contracts", count: @flagged_contract_count) %></div>
+          <div class="text-white/35"><%= t("dashboard.exposure.companies", count: @flagged_companies_count) %></div>
+          <div class="text-white/35"><%= t("dashboard.exposure.public_entities", count: @flagged_public_entities_count) %></div>
         </div>
       </div>
     </div>
 
-    <%# Cards %>
-    <div class="flex flex-col gap-2">
-      <% @insights.each do |insight| %>
-        <div data-action="click->dashboard#toggleInsight"
-             class="bg-white/2 border border-white/6 border-l-[3px] border-l-[#c8a84e] rounded-lg p-5 cursor-pointer transition-all hover:bg-white/4">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex items-center gap-3">
-              <span class="bg-[#c8a84e22] text-[#c8a84e] font-mono text-[11px] font-bold px-2.5 py-0.5 rounded tracking-widest">
-                <%= insight[:severity] %>
-              </span>
-              <span class="text-white/40 text-xs"><%= insight[:subtitle] %></span>
-            </div>
-            <div class="flex items-center gap-2">
-               <div class="w-20 h-1 bg-white/8 rounded overflow-hidden">
-                 <div class="h-full bg-[#c8a84e]" style="width: <%= insight[:score] %>%"></div>
-               </div>
-               <span class="font-mono text-xs text-[#c8a84e] font-bold"><%= insight[:score] %>%</span>
-            </div>
+    <div class="border border-white/[0.08] rounded-lg p-5 mb-6 bg-black/10">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-4">
+        <div>
+          <h2 class="font-['Space_Grotesk'] text-lg font-semibold text-[#e8e0d4]">
+            <%= t("dashboard.entity_exposure.heading") %>
+          </h2>
+          <p class="font-mono text-[11px] tracking-wider text-white/35 mt-1">
+            <%= t("dashboard.entity_exposure.subheading") %>
+          </p>
+        </div>
+        <%= form_with url: dashboard_index_path, method: :get, local: true, class: "flex flex-wrap items-end gap-2.5" do |f| %>
+          <div>
+            <label class="block font-mono text-[10px] tracking-[2px] text-white/40 mb-1"><%= t("dashboard.entity_exposure.flag") %></label>
+            <%= f.select :entity_flag_type,
+                [[t("dashboard.entity_exposure.all_flags"), ""]] + @flag_types.map { |flag_type| [flag_type, flag_type] },
+                { selected: @entity_flag_type },
+                class: "bg-black/30 border border-white/10 rounded px-2.5 py-2 font-mono text-xs text-white/75 focus:outline-hidden focus:border-[#c8a84e66]" %>
           </div>
-          <h3 class="font-['Space_Grotesk'] text-lg font-semibold text-[#e8e0d4] my-2">
-            <%= insight[:title] %>
-          </h3>
-          <div class="font-mono text-base text-[#c8a84e] font-medium">
-            💰 <%= insight[:amount] %>
+          <div>
+            <label class="block font-mono text-[10px] tracking-[2px] text-white/40 mb-1"><%= t("dashboard.entity_exposure.sort") %></label>
+            <%= f.select :entity_sort,
+                [
+                  [t("dashboard.entity_exposure.sort_value"), "value"],
+                  [t("dashboard.entity_exposure.sort_count"), "count"]
+                ],
+                { selected: @entity_sort },
+                class: "bg-black/30 border border-white/10 rounded px-2.5 py-2 font-mono text-xs text-white/75 focus:outline-hidden focus:border-[#c8a84e66]" %>
           </div>
+          <%= f.submit t("contracts.index.filter"), class: "bg-[#c8a84e22] text-[#c8a84e] border border-[#c8a84e44] px-3 py-2 rounded font-mono text-xs font-semibold tracking-[1px] hover:bg-[#c8a84e33] transition-colors cursor-pointer" %>
+        <% end %>
+      </div>
 
-          <div data-details class="hidden mt-4 animate-fade-up">
-            <p class="text-white/65 text-sm leading-relaxed mb-4">
-              <%= insight[:description] %>
-            </p>
-            <div class="bg-black/30 border-l-2 border-[#c8a84e55] rounded p-3 mb-3">
-              <div class="font-mono text-[10px] text-white/35 tracking-widest mb-1.5 uppercase"><%= t("dashboard.insights.pattern") %></div>
-              <div class="font-mono text-xs text-[#c8a84e] font-medium">
-                <%= insight[:pattern] %>
-              </div>
+      <% if @entity_exposure_rows.empty? %>
+        <div class="font-mono text-xs text-white/35 py-2">
+          <%= t("dashboard.entity_exposure.empty") %>
+        </div>
+      <% else %>
+        <div class="overflow-x-auto">
+          <div class="min-w-[720px]">
+            <div class="grid grid-cols-[220px_1fr_180px_160px] gap-3 font-mono text-[10px] tracking-[2px] text-white/35 border-b border-white/8 pb-2">
+              <span><%= t("dashboard.entity_exposure.col_flag") %></span>
+              <span><%= t("dashboard.entity_exposure.col_entity") %></span>
+              <span class="text-right"><%= t("dashboard.entity_exposure.col_value") %></span>
+              <span class="text-right"><%= t("dashboard.entity_exposure.col_count") %></span>
             </div>
-            <div class="flex flex-wrap gap-1.5">
-              <% insight[:sources].each do |source| %>
-                <span class="font-mono text-[11px] text-white/45 bg-white/5 px-2.5 py-1 rounded border border-white/8">
-                  <%= source %>
-                </span>
+            <div class="divide-y divide-white/5">
+              <% @entity_exposure_rows.each do |row| %>
+                <div class="grid grid-cols-[220px_1fr_180px_160px] gap-3 py-2.5 font-mono text-xs">
+                  <span class="text-[#c8a84e]"><%= row.flag_type.to_s.tr("_", " ").squeeze(" ").strip %></span>
+                  <span class="text-white/75"><%= row.entity_name %></span>
+                  <span class="text-right text-white/65"><%= number_to_currency(row.exposure_value, unit: "€", delimiter: ",", separator: ".", format: "%u%n", precision: 2) %></span>
+                  <span class="text-right text-[#e8e0d4]"><%= number_with_delimiter(row.exposure_count) %></span>
+                </div>
               <% end %>
             </div>
           </div>
         </div>
       <% end %>
     </div>
+
   </div>
 
   <%# Crossings Pane %>
@@ -169,7 +183,7 @@
       <%= t("app.name") %>
     </div>
     <div class="font-mono text-[10px] text-white/15">
-      <%= link_to t("app.footer_repo"), "https://github.com/bit-of-a-shambles/observatory",
+      <%= link_to t("app.footer_repo"), "https://github.com/bit-of-a-shambles/open-tender-watch",
           target: "_blank", rel: "noopener noreferrer",
           class: "hover:text-white/35 transition-colors" %>
     </div>
