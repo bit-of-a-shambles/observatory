@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_25_151740) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_26_235334) do
   create_table "contract_winners", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.integer "entity_id", null: false
@@ -37,9 +37,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_151740) do
     t.datetime "updated_at", null: false
     t.string "country_code", default: "PT", null: false
     t.integer "data_source_id"
+    t.index ["celebration_date"], name: "index_contracts_on_celebration_date"
     t.index ["contracting_entity_id"], name: "index_contracts_on_contracting_entity_id"
+    t.index ["country_code"], name: "index_contracts_on_country_code"
+    t.index ["cpv_code"], name: "index_contracts_on_cpv_code"
     t.index ["data_source_id"], name: "index_contracts_on_data_source_id"
     t.index ["external_id", "country_code"], name: "index_contracts_on_external_id_and_country_code", unique: true
+    t.index ["procedure_type"], name: "index_contracts_on_procedure_type"
   end
 
   create_table "data_sources", force: :cascade do |t|
