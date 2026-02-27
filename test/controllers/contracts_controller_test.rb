@@ -1,7 +1,7 @@
 require "test_helper"
 
 class ContractsControllerTest < ActionDispatch::IntegrationTest
-  def create_contract!(external_id:, object:)
+  def create_contract!(external_id:, object:, data_source: data_sources(:portal_base))
     Contract.create!(
       external_id: external_id,
       country_code: "PT",
@@ -11,7 +11,7 @@ class ContractsControllerTest < ActionDispatch::IntegrationTest
       publication_date: Date.new(2025, 1, 10),
       celebration_date: Date.new(2025, 1, 12),
       contracting_entity: entities(:one),
-      data_source: data_sources(:portal_base)
+      data_source: data_source
     )
   end
 
@@ -38,6 +38,55 @@ class ContractsControllerTest < ActionDispatch::IntegrationTest
   test "index paginates with page param" do
     get contracts_url, params: { page: 2 }
     assert_response :success
+  end
+
+  test "index filters by selected source ids" do
+    portal_contract = create_contract!(
+      external_id: "source-filter-1",
+      object: "Portal BASE only contract",
+      data_source: data_sources(:portal_base)
+    )
+    sns_contract = create_contract!(
+      external_id: "source-filter-2",
+      object: "SNS only contract",
+      data_source: data_sources(:sns_pt)
+    )
+
+    get contracts_url, params: { source_ids: [ data_sources(:sns_pt).id ] }
+    assert_response :success
+    assert_includes response.body, sns_contract.object
+    assert_not_includes response.body, portal_contract.object
+  end
+
+  test "index accepts multiple selected source ids" do
+    portal_contract = create_contract!(
+      external_id: "source-filter-3",
+      object: "Portal contract for multi source",
+      data_source: data_sources(:portal_base)
+    )
+    sns_contract = create_contract!(
+      external_id: "source-filter-4",
+      object: "SNS contract for multi source",
+      data_source: data_sources(:sns_pt)
+    )
+    ted_contract = create_contract!(
+      external_id: "source-filter-5",
+      object: "TED contract for exclusion",
+      data_source: data_sources(:ted_pt)
+    )
+
+    get contracts_url, params: { source_ids: [ data_sources(:portal_base).id, data_sources(:sns_pt).id ] }
+    assert_response :success
+    assert_includes response.body, portal_contract.object
+    assert_includes response.body, sns_contract.object
+    assert_not_includes response.body, ted_contract.object
+  end
+
+  test "index renders source checkbox dropdown controls" do
+    get contracts_url
+    assert_response :success
+    assert_select "details summary", /Sources/
+    assert_select "input[type=checkbox][name='source_ids\\[\\]']", minimum: 1
   end
 
   test "index filters flagged contracts only" do

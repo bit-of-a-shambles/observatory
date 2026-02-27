@@ -74,7 +74,9 @@ module PublicContracts
         return contract_summary unless id
 
         detail = fetch_json("#{CONTRACTS_URL}/#{id}")
-        detail ? contract_summary.merge(detail) : contract_summary
+        return contract_summary unless detail
+
+        contract_summary.merge(extract_detail_payload(detail))
       end
 
       private
@@ -120,14 +122,21 @@ module PublicContracts
           "contract_type"      => extract_contract_type(contract),
           "procedure_type"     => contract["tipoprocedimento"].to_s.strip,
           "publication_date"   => parse_date(contract["dataPublicacao"]),
-          "celebration_date"   => parse_date(contract["dataCelebracaoContrato"]),
+          "celebration_date"   => extract_celebration_date(contract),
           "base_price"         => parse_decimal(contract["precoContratual"]),
           "total_effective_price" => extract_total_effective_price(contract),
-          "cpv_code"           => extract_cpv(first_present(contract, "cpvs", "cpv")),
-          "location"           => contract["localExecucao"].to_s.strip.presence,
+          "cpv_code"           => extract_cpv(first_present(contract, "cpvs", "cpv", "codigoCpv",
+                                                            "cpvCodigo", "cpv_code", "cpvCode")),
+          "location"           => extract_location(contract),
           "contracting_entity" => build_authority(contract),
           "winners"            => build_winners(contract)
         }
+      end
+
+      def extract_detail_payload(detail)
+        return detail unless detail.is_a?(Hash)
+
+        detail["contract"] || detail["data"] || detail["result"] || detail
       end
 
       def build_authority(contract)
@@ -148,17 +157,56 @@ module PublicContracts
 
       # QuemFatura CPV format: "33000000-0" or "33000000-0 - Description"
       def extract_cpv(value)
-        return nil if value.to_s.strip.empty?
-        value.to_s.split(/[\s-]/, 2).first.strip
+        case value
+        when Array
+          value.each do |item|
+            cpv = extract_cpv(item)
+            return cpv if cpv.present?
+          end
+          nil
+        when Hash
+          extract_cpv(first_present(value, "cpv", "codigo", "code", "value"))
+        else
+          text = value.to_s.strip
+          return nil if text.empty?
+
+          text[/\d{8}/] || text.split(/[\s-]/, 2).first.strip
+        end
       end
 
       def extract_contract_type(contract)
-        first_present(contract, "tipocontrato", "tipoContrato", "tipo_de_contrato", "contractType")&.to_s&.strip&.presence
+        extract_text(first_present(contract, "tipocontrato", "tipoContrato", "tipo_de_contrato",
+                                   "tipo_contrato", "contractType", "contract_type"))
       end
 
       def extract_total_effective_price(contract)
         parse_decimal(first_present(contract, "precoEfetivo", "preco_efetivo", "preco_total_efetivo",
                                     "precoTotalEfetivo", "precoTotal"))
+      end
+
+      def extract_celebration_date(contract)
+        parse_date(first_present(contract, "dataCelebracaoContrato", "dataCelebracao", "celebrationDate",
+                                 "celebration_date", "dataAssinatura", "data_assinatura"))
+      end
+
+      def extract_location(contract)
+        extract_text(first_present(contract, "localExecucao", "local_execucao", "local",
+                                   "location", "localidade", "nuts"))
+      end
+
+      def extract_text(value)
+        case value
+        when Array
+          value.each do |item|
+            text = extract_text(item)
+            return text if text.present?
+          end
+          nil
+        when Hash
+          extract_text(first_present(value, "nome", "name", "descricao", "description", "label", "value", "texto"))
+        else
+          value.to_s.strip.presence
+        end
       end
 
       def first_present(hash, *keys)

@@ -73,6 +73,11 @@ en:
       search_placeholder: "Search contract description…"
       all_procedures: "All procedures"
       all_countries: "All countries"
+      sources: "Sources"
+      all_sources: "All sources"
+      sources_selected:
+        one: "%{count} selected"
+        other: "%{count} selected"
       all_flag_states: "All contracts"
       flagged_only: "Flagged only"
       unflagged_only: "Unflagged only"

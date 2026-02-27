@@ -7,6 +7,7 @@ class ContractsController < ApplicationController
 
   def index
     scope = Contract.includes(:contracting_entity, :winners, :data_source, :flags)
+    @selected_source_ids = Array(params[:source_ids]).reject(&:blank?).map(&:to_i).uniq
 
     if params[:q].present?
       scope = scope.where("object LIKE ?", "%#{params[:q]}%")
@@ -18,6 +19,10 @@ class ContractsController < ApplicationController
 
     if params[:country].present?
       scope = scope.where(country_code: params[:country])
+    end
+
+    if @selected_source_ids.any?
+      scope = scope.where(data_source_id: @selected_source_ids)
     end
 
     case params[:flagged]
@@ -40,6 +45,7 @@ class ContractsController < ApplicationController
     @procedure_types = Contract.distinct.pluck(:procedure_type).compact.sort
     @countries       = Contract.distinct.pluck(:country_code).compact.sort
     @flag_types      = Flag.distinct.order(:flag_type).pluck(:flag_type)
+    @source_options  = DataSource.order(:name).pluck(:id, :name)
   end
 
   def show

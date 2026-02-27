@@ -32,6 +32,26 @@
           { selected: params[:country] },
           class: "bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
     </div>
+    <details class="relative">
+      <summary class="list-none bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] cursor-pointer hover:border-[#c8a84e55] transition-all min-w-[180px]">
+        <span class="inline-flex items-center gap-2">
+          <span><%= t("contracts.index.sources") %></span>
+          <% if @selected_source_ids.any? %>
+            <span class="text-[#c8a84e]"><%= t("contracts.index.sources_selected", count: @selected_source_ids.size) %></span>
+          <% else %>
+            <span class="text-white/35"><%= t("contracts.index.all_sources") %></span>
+          <% end %>
+        </span>
+      </summary>
+      <div class="absolute left-0 mt-2 w-[280px] max-h-[280px] overflow-y-auto bg-[#0f131c] border border-white/[0.12] rounded p-3 z-20 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+        <% @source_options.each do |source_id, source_name| %>
+          <label class="flex items-start gap-2 py-1.5 text-xs text-[#e8e0d4] font-mono cursor-pointer">
+            <%= check_box_tag "source_ids[]", source_id, @selected_source_ids.include?(source_id), class: "mt-0.5 accent-[#c8a84e] rounded" %>
+            <span class="leading-snug"><%= source_name %></span>
+          </label>
+        <% end %>
+      </div>
+    </details>
     <div>
       <%= f.select :flagged,
           [
@@ -50,7 +70,7 @@
     </div>
     <%= f.submit t("contracts.index.filter"),
         class: "bg-[#c8a84e1a] border border-[#c8a84e44] text-[#c8a84e] font-mono text-xs tracking-widest px-4 py-2 rounded hover:bg-[#c8a84e33] transition-all cursor-pointer" %>
-    <% if params[:q].present? || params[:procedure_type].present? || params[:country].present? || params[:flagged].present? || params[:flag_type].present? %>
+    <% if params[:q].present? || params[:procedure_type].present? || params[:country].present? || params[:flagged].present? || params[:flag_type].present? || @selected_source_ids.any? %>
       <%= link_to t("contracts.index.clear"), contracts_path,
           class: "border border-white/10 text-white/30 font-mono text-xs tracking-widest px-4 py-2 rounded hover:text-white/50 transition-all" %>
     <% end %>

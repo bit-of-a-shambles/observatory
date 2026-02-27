@@ -46,6 +46,20 @@ class PublicContracts::PT::QuemFaturaClientTest < ActiveSupport::TestCase
     mock
   end
 
+  def fake_http_with_responses(*responses)
+    http = Object.new
+    http.instance_variable_set(:@responses, responses)
+    http.define_singleton_method(:use_ssl=) { |_| nil }
+    http.define_singleton_method(:open_timeout=) { |_| nil }
+    http.define_singleton_method(:read_timeout=) { |_| nil }
+    http.define_singleton_method(:request) do |_request|
+      raise "No queued HTTP responses left" if @responses.empty?
+
+      @responses.shift
+    end
+    http
+  end
+
   setup do
     @client = PublicContracts::PT::QuemFaturaClient.new("fetch_details" => false)
   end
@@ -270,5 +284,49 @@ class PublicContracts::PT::QuemFaturaClientTest < ActiveSupport::TestCase
     normalized = @client.send(:normalize, contract)
     assert_equal "Aquisição de Serviços", normalized["contract_type"]
     assert_equal BigDecimal("27700.55"), normalized["total_effective_price"]
+  end
+
+  test "fetch_contracts with details maps celebration_date contract_type cpv and location" do
+    client = PublicContracts::PT::QuemFaturaClient.new("fetch_details" => true)
+    detail_payload = {
+      "contract" => {
+        "dataCelebracaoContrato" => "2025-01-10",
+        "tipoContrato" => "Aquisição de Serviços",
+        "cpvs" => [ "33000000-0 - Equipamentos médicos" ],
+        "localExecucao" => "Lisboa"
+      }
+    }
+    http = fake_http_with_responses(
+      fake_success(PAYLOAD.to_json),
+      fake_success(detail_payload.to_json)
+    )
+
+    Net::HTTP.stub(:new, http) do
+      contract = client.fetch_contracts.first
+      assert_equal Date.new(2025, 1, 10), contract["celebration_date"]
+      assert_equal "Aquisição de Serviços", contract["contract_type"]
+      assert_equal "33000000", contract["cpv_code"]
+      assert_equal "Lisboa", contract["location"]
+    end
+  end
+
+  test "normalize extracts detail fields from alternate structures" do
+    contract = RECORD.merge(
+      "dataCelebracao" => "2025-02-14",
+      "tipocontrato" => { "descricao" => "Empreitada de obras públicas" },
+      "cpvs" => [ { "codigo" => "45000000-7" } ],
+      "localExecucao" => { "descricao" => "Porto" }
+    )
+
+    normalized = @client.send(:normalize, contract)
+    assert_equal Date.new(2025, 2, 14), normalized["celebration_date"]
+    assert_equal "Empreitada de obras públicas", normalized["contract_type"]
+    assert_equal "45000000", normalized["cpv_code"]
+    assert_equal "Porto", normalized["location"]
+  end
+
+  test "extract_text returns first present value from arrays" do
+    value = [ "", { "descricao" => "Setúbal" } ]
+    assert_equal "Setúbal", @client.send(:extract_text, value)
   end
 end

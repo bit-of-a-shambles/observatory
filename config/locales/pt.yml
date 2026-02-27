@@ -73,6 +73,11 @@ pt:
       search_placeholder: "Pesquisar descrição do contrato…"
       all_procedures: "Todos os procedimentos"
       all_countries: "Todos os países"
+      sources: "Fontes"
+      all_sources: "Todas as fontes"
+      sources_selected:
+        one: "%{count} selecionada"
+        other: "%{count} selecionadas"
       all_flag_states: "Todos os contratos"
       flagged_only: "Apenas sinalizados"
       unflagged_only: "Apenas sem sinalização"
