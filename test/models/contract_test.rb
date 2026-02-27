@@ -32,7 +32,7 @@ class ContractTest < ActiveSupport::TestCase
       contracting_entity: entities(:one)
     )
     assert_not dup.valid?
-    assert_includes dup.errors[:external_id], "has already been taken"
+    assert_includes dup.errors.details[:external_id].map { |e| e[:error] }, :taken
   end
 
   test "same external_id allowed in different countries" do
@@ -72,11 +72,30 @@ class ContractTest < ActiveSupport::TestCase
     assert_respond_to contracts(:one), :winners
   end
 
+  test "has many flags" do
+    assert_respond_to contracts(:one), :flags
+  end
+
   test "contract_winners destroyed with contract" do
     contract = contracts(:one)
     winner_count = contract.contract_winners.count
     assert winner_count > 0
     contract.destroy
     assert_equal 0, ContractWinner.where(contract_id: contract.id).count
+  end
+
+  test "flags destroyed with contract" do
+    contract = contracts(:one)
+    Flag.create!(
+      contract: contract,
+      flag_type: "TEST_FLAG",
+      severity: "high",
+      score: 10,
+      fired_at: Time.current
+    )
+
+    assert_equal 1, Flag.where(contract_id: contract.id).count
+    contract.destroy
+    assert_equal 0, Flag.where(contract_id: contract.id).count
   end
 end

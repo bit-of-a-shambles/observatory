@@ -14,7 +14,7 @@ class DataSourceTest < ActiveSupport::TestCase
   test "invalid without country_code" do
     ds = DataSource.new(name: "X", source_type: "api", adapter_class: "X")
     assert_not ds.valid?
-    assert_includes ds.errors[:country_code], "can't be blank"
+    assert_includes ds.errors.details[:country_code].map { |e| e[:error] }, :blank
   end
 
   test "invalid without name" do

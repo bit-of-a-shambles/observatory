@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_26_235334) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_27_191500) do
   create_table "contract_winners", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.integer "entity_id", null: false
@@ -75,8 +75,24 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_26_235334) do
     t.index ["tax_identifier", "country_code"], name: "index_entities_on_tax_identifier_and_country_code", unique: true
   end
 
+  create_table "flags", force: :cascade do |t|
+    t.integer "contract_id", null: false
+    t.string "flag_type", null: false
+    t.string "severity", null: false
+    t.integer "score", null: false
+    t.json "details", default: {}
+    t.datetime "fired_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contract_id", "flag_type"], name: "index_flags_on_contract_id_and_flag_type", unique: true
+    t.index ["contract_id"], name: "index_flags_on_contract_id"
+    t.index ["flag_type"], name: "index_flags_on_flag_type"
+    t.index ["severity"], name: "index_flags_on_severity"
+  end
+
   add_foreign_key "contract_winners", "contracts"
   add_foreign_key "contract_winners", "entities"
   add_foreign_key "contracts", "data_sources"
   add_foreign_key "contracts", "entities", column: "contracting_entity_id"
+  add_foreign_key "flags", "contracts"
 end

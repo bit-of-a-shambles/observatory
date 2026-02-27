@@ -9,7 +9,7 @@ class EntityTest < ActiveSupport::TestCase
   test "invalid without name" do
     entity = Entity.new(tax_identifier: "123456789", country_code: "PT")
     assert_not entity.valid?
-    assert_includes entity.errors[:name], "can't be blank"
+    assert entity.errors.added?(:name, :blank)
   end
 
   test "invalid without tax_identifier" do
@@ -31,7 +31,7 @@ class EntityTest < ActiveSupport::TestCase
       country_code:   existing.country_code
     )
     assert_not duplicate.valid?
-    assert_includes duplicate.errors[:tax_identifier], "has already been taken"
+    assert_includes duplicate.errors.details[:tax_identifier].map { |e| e[:error] }, :taken
   end
 
   test "same tax_identifier allowed in different countries" do
