@@ -23,18 +23,19 @@ sns_pt:
   status: inactive
   record_count: 0
 
-portal_base_secondary:
+quem_fatura_pt:
   country_code: PT
-  name: Portal BASE Secondary
+  name: QuemFatura.pt
   source_type: api
-  adapter_class: PublicContracts::PT::PortalBaseClient
-  status: active
+  adapter_class: PublicContracts::PT::QuemFaturaClient
+  status: inactive
   record_count: 0
 
-portal_base_inactive:
-  country_code: PT
-  name: Portal BASE Inactive
+portal_es:
+  country_code: ES
+  name: Portal de Contratación ES
   source_type: api
-  adapter_class: PublicContracts::PT::PortalBaseClient
+  adapter_class: PublicContracts::EU::TedClient
+  config: '{"country_code":"ESP"}'
   status: inactive
   record_count: 0

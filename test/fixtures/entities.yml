@@ -17,3 +17,13 @@ two:
   address: Rua das Obras 10
   postal_code: "4000-100"
   locality: Porto
+
+three:
+  name: Ayuntamiento de Madrid
+  tax_identifier: "A28000001"
+  country_code: ES
+  is_public_body: true
+  is_company: false
+  address: Plaza de Cibeles 1
+  postal_code: "28014"
+  locality: Madrid

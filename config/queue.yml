@@ -3,10 +3,6 @@ default: &default
     - polling_interval: 1
       batch_size: 500
   workers:
-    - queues: "portal_base_ingestion"
-      threads: <%= [ENV.fetch("PORTAL_BASE_QUEUE_THREADS", 1).to_i, 2].min %>
-      processes: <%= [ENV.fetch("PORTAL_BASE_QUEUE_PROCESSES", 1).to_i, 2].min %>
-      polling_interval: 0.2
     - queues: "*"
       threads: 3
       processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>

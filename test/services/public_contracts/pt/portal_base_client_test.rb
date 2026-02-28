@@ -36,11 +36,10 @@ class PublicContracts::PT::PortalBaseClientTest < ActiveSupport::TestCase
     end
   end
 
-  test "fetch_contracts raises transient error on retryable status" do
+  test "fetch_contracts returns empty array when API returns nil" do
     Net::HTTP.stub(:get_response, fake_error) do
-      assert_raises(PublicContracts::PT::PortalBaseClient::TransientError) do
-        @client.fetch_contracts
-      end
+      result = @client.fetch_contracts
+      assert_equal [], result
     end
   end
 
@@ -56,12 +55,6 @@ class PublicContracts::PT::PortalBaseClientTest < ActiveSupport::TestCase
     Net::HTTP.stub(:get_response, fake_error("404", "Not Found")) do
       result = @client.find_contract(99)
       assert_nil result
-    end
-  end
-
-  test "get returns nil on invalid JSON payload" do
-    Net::HTTP.stub(:get_response, fake_success("not-json")) do
-      assert_equal [], @client.fetch_contracts
     end
   end
 

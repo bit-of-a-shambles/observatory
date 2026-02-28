@@ -27,3 +27,18 @@ two:
   total_effective_price: 19500.00
   cpv_code: "90911000"
   location: Porto
+
+three:
+  external_id: "contract-003"
+  contracting_entity: three
+  data_source: portal_es
+  country_code: ES
+  object: Suministro de equipamiento urbano
+  contract_type: Suministros
+  procedure_type: Contrato menor
+  publication_date: 2026-02-15
+  celebration_date: 2026-02-20
+  base_price: 14000.00
+  total_effective_price: 13950.00
+  cpv_code: "34928400"
+  location: Madrid
