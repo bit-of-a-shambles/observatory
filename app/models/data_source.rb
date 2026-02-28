@@ -3,6 +3,9 @@ class DataSource < ApplicationRecord
 
   enum :status, { inactive: "inactive", active: "active", error: "error" }, default: "inactive"
 
+  scope :active_sources, -> { where(status: :active) }
+  scope :portal_base, -> { where(adapter_class: "PublicContracts::PT::PortalBaseClient") }
+
   has_many :contracts
 
   validates :country_code,  presence: true

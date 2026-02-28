@@ -35,6 +35,38 @@ class ContractTest < ActiveSupport::TestCase
     assert_includes dup.errors.details[:external_id].map { |e| e[:error] }, :taken
   end
 
+  test "database unique index enforces external_id and country_code" do
+    existing = contracts(:one)
+    assert_raises ActiveRecord::RecordNotUnique do
+      Contract.insert_all!([
+        {
+          external_id: existing.external_id,
+          country_code: existing.country_code,
+          object: "Dup",
+          contracting_entity_id: entities(:one).id,
+          created_at: Time.current,
+          updated_at: Time.current
+        }
+      ])
+    end
+  end
+
+  test "database unique index enforces external_id and country_code" do
+    existing = contracts(:one)
+    assert_raises ActiveRecord::RecordNotUnique do
+      Contract.insert_all!([
+        {
+          external_id: existing.external_id,
+          country_code: existing.country_code,
+          object: "Dup",
+          contracting_entity_id: entities(:one).id,
+          created_at: Time.current,
+          updated_at: Time.current
+        }
+      ])
+    end
+  end
+
   test "same external_id allowed in different countries" do
     existing = contracts(:one)
     other = Contract.new(

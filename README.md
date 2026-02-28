@@ -184,12 +184,50 @@ bin/rails runner "DataSource.find_by(adapter_class: 'PublicContracts::EU::TedCli
 **Import all active sources:**
 
 ```bash
-bin/rails runner "DataSource.where(active: true).each { |ds| ImportService.new(ds).call }"
+bin/rails runner "DataSource.active_sources.each { |ds| ImportService.new(ds).call }"
 ```
 
 Or via the Rails console (`bin/rails console`) for interactive exploration.
 
 The TED adapter requires a `TED_API_KEY` environment variable (free registration at developer.ted.europa.eu). All other sources require no API key.
+
+**Full Portal BASE ingestion (all active Portal BASE data sources):**
+
+```bash
+# Development/test: runs inline page-by-page
+bin/rails portal_base:ingest:full PORTAL_BASE_PAGE_SIZE=100
+
+# Production: enqueues Solid Queue jobs
+bin/rails portal_base:ingest:full PORTAL_BASE_PAGE_SIZE=100
+```
+
+Operational parameters:
+- `PORTAL_BASE_PAGE_SIZE` (default `100`)
+- `PORTAL_BASE_QUEUE_THREADS` (default `1`, capped at `2`)
+- `PORTAL_BASE_QUEUE_PROCESSES` (default `1`, capped at `2`)
+- `PORTAL_BASE_MAX_RETRIES` (default `5`)
+- `PORTAL_BASE_PAGE_SLEEP_SECONDS` (default `0.1`)
+- `PORTAL_BASE_CIRCUIT_BREAKER_FAILURE_THRESHOLD` (default `3` consecutive failures per DataSource)
+
+Snapshot semantics:
+- Full ingestion is always a fresh snapshot (`page=1`).
+- `last_success_page` is **recovery-only** and only reused when the same `run_id` is active.
+- Every full enqueue assigns a new `run_id` per DataSource under `data_sources.config["portal_base_ingestion"]`.
+
+Circuit breaker semantics:
+- Breaker is scoped per DataSource and opens after N consecutive transient failures.
+- Open-state TTL is 15 minutes.
+- First successful page import clears breaker state automatically.
+
+Progress & verification:
+
+```bash
+# per-data-source checkpoints / counts
+bin/rails runner "puts DataSource.portal_base.select(:id, :name, :status, :record_count, :last_success_page).map(&:attributes)"
+
+# total imported contracts from Portal BASE sources
+bin/rails runner "puts Contract.joins(:data_source).where(data_sources: { adapter_class: 'PublicContracts::PT::PortalBaseClient' }).count"
+```
 
 #### Adding a new data source
 
