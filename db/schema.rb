@@ -10,13 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_27_191500) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_28_100000) do
   create_table "contract_winners", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.integer "entity_id", null: false
     t.decimal "price_share", precision: 15, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["contract_id", "entity_id"], name: "index_contract_winners_on_contract_and_entity", unique: true
     t.index ["contract_id"], name: "index_contract_winners_on_contract_id"
     t.index ["entity_id"], name: "index_contract_winners_on_entity_id"
   end
@@ -57,6 +58,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_191500) do
     t.integer "record_count", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "last_success_page", default: 0, null: false
     t.index ["country_code"], name: "index_data_sources_on_country_code"
     t.index ["status"], name: "index_data_sources_on_status"
   end
@@ -77,15 +79,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_191500) do
 
   create_table "flags", force: :cascade do |t|
     t.integer "contract_id", null: false
-    t.string "flag_type", null: false
+    t.string "flag_type"
     t.string "severity", null: false
-    t.integer "score", null: false
+    t.integer "score"
     t.json "details", default: {}
-    t.datetime "fired_at", null: false
+    t.datetime "fired_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "country_code"
+    t.string "flag_key"
+    t.decimal "confidence", precision: 5, scale: 4
+    t.decimal "data_completeness", precision: 5, scale: 4
+    t.json "evidence", default: {}
+    t.string "fingerprint"
+    t.datetime "detected_at"
+    t.index ["contract_id", "flag_key"], name: "index_flags_on_contract_id_and_flag_key", unique: true
     t.index ["contract_id", "flag_type"], name: "index_flags_on_contract_id_and_flag_type", unique: true
     t.index ["contract_id"], name: "index_flags_on_contract_id"
+    t.index ["country_code"], name: "index_flags_on_country_code"
+    t.index ["flag_key"], name: "index_flags_on_flag_key"
     t.index ["flag_type"], name: "index_flags_on_flag_type"
     t.index ["severity"], name: "index_flags_on_severity"
   end

@@ -30,3 +30,12 @@ quem_fatura_pt:
   adapter_class: PublicContracts::PT::QuemFaturaClient
   status: inactive
   record_count: 0
+
+portal_es:
+  country_code: ES
+  name: Portal de Contratación ES
+  source_type: api
+  adapter_class: PublicContracts::EU::TedClient
+  config: '{"country_code":"ESP"}'
+  status: inactive
+  record_count: 0

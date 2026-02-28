@@ -329,4 +329,17 @@ class PublicContracts::PT::QuemFaturaClientTest < ActiveSupport::TestCase
     value = [ "", { "descricao" => "Setúbal" } ]
     assert_equal "Setúbal", @client.send(:extract_text, value)
   end
+
+  test "extract_cpv returns nil when array has no usable cpv" do
+    value = [nil, "", { "codigo" => nil }, { "value" => "" }]
+
+    assert_nil @client.send(:extract_cpv, value)
+  end
+
+  test "extract_text returns nil when array has no present text" do
+    value = ["", "   ", { "descricao" => "" }, []]
+
+    assert_nil @client.send(:extract_text, value)
+  end
+
 end
