@@ -97,15 +97,15 @@ module PublicContracts
         {
           "external_id"           => h["idcontrato"]&.to_s,
           "country_code"          => COUNTRY_CODE,
-          "object"                => h["objectoContrato"]&.strip,
-          "procedure_type"        => h["tipoprocedimento"],
-          "contract_type"         => h["tipoContrato"],
+          "object"                => h["objectoContrato"]&.to_s&.strip,
+          "procedure_type"        => h["tipoprocedimento"]&.to_s,
+          "contract_type"         => h["tipoContrato"]&.to_s,
           "publication_date"      => parse_date(h["dataPublicacao"]),
           "celebration_date"      => parse_date(h["dataCelebracaoContrato"]),
           "base_price"            => parse_decimal(h["precoBaseProcedimento"]),
           "total_effective_price" => effective,
           "cpv_code"              => parse_cpv(h["CPV"]),
-          "location"              => h["LocalExecucao"],
+          "location"              => h["LocalExecucao"]&.to_s,
           "contracting_entity"    => contracting,
           "winners"               => parse_winners(h["adjudicatarios"])
         }
@@ -113,16 +113,18 @@ module PublicContracts
 
       # Parse "504595067 - Entidade Pública, L.da"
       def parse_entity(raw)
-        return nil if raw.blank?
-        m = raw.strip.match(/\A(\d{6,11})\s*[-–]\s*(.+)\z/m)
+        str = raw.to_s.strip
+        return nil if str.blank?
+        m = str.match(/\A(\d{6,11})\s*[-–]\s*(.+)\z/m)
         return nil unless m
         { "tax_identifier" => m[1], "name" => m[2].strip, "is_public_body" => true }
       end
 
       # Parse multi-line adjudicatarios: "NIF - Name\nNIF - [pos - ]Name"
       def parse_winners(raw)
-        return [] if raw.blank?
-        raw.to_s.split(/\r?\n/).filter_map do |line|
+        str = raw.to_s.strip
+        return [] if str.blank?
+        str.split(/\r?\n/).filter_map do |line|
           m = line.strip.match(/\A(\d{6,11})\s*[-–]\s*(.+)\z/)
           next unless m
           # Strip optional leading position counter "1 - " from the name
@@ -133,8 +135,9 @@ module PublicContracts
 
       # "31720000-9 - Equipamento..." → "31720000"
       def parse_cpv(raw)
-        return nil if raw.blank?
-        raw.strip.split(/\s+/).first&.split("-")&.first
+        str = raw.to_s.strip
+        return nil if str.blank?
+        str.split(/\s+/).first&.split("-")&.first
       end
 
       def parse_date(value)
