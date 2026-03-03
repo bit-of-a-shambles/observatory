@@ -81,7 +81,7 @@ module PublicContracts
         body = {
           query:          "organisation-country-buyer=#{@country_code}",
           fields:         DEFAULT_FIELDS,
-          limit:          [limit, MAX_SCROLL_LIMIT].min,
+          limit:          [ limit, MAX_SCROLL_LIMIT ].min,
           paginationMode: "ITERATION"
         }
         body[:iterationNextToken] = @scroll_token if @scroll_token
