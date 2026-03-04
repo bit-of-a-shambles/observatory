@@ -198,7 +198,7 @@ module PublicContracts
         xlsx    = Roo::Spreadsheet.open(path)
         headers = nil
         xlsx.each_row_streaming(pad_cells: true) do |cells|
-          values = cells.map(&:value)
+          values = cells.map { |c| c&.value }
           if headers.nil?
             headers = values
           else
