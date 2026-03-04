@@ -25,9 +25,15 @@ namespace :flags do
     puts "A1 repeat direct awards flagged: #{flagged}"
   end
 
+  desc "Run B5 Benford's Law deviation scoring (leading-digit distribution anomaly per entity)"
+  task run_b5_benford: :environment do
+    flagged = Flags::Actions::BenfordLawAction.new.call
+    puts "B5 Benford's Law deviations flagged: #{flagged}"
+  end
+
   desc "Run all scoring actions"
   task run_all: :environment do
-    %i[run_first_action run_a9 run_a5 run_a1].each do |t|
+    %i[run_first_action run_a9 run_a5 run_a1 run_b5_benford].each do |t|
       Rake::Task["flags:#{t}"].invoke
     end
   end
