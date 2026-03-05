@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_04_000000) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_05_000000) do
   create_table "contract_winners", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.integer "entity_id", null: false
@@ -38,6 +38,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_04_000000) do
     t.datetime "updated_at", null: false
     t.string "country_code", default: "PT", null: false
     t.integer "data_source_id"
+    t.index ["base_price"], name: "index_contracts_on_base_price"
     t.index ["celebration_date"], name: "index_contracts_on_celebration_date"
     t.index ["contracting_entity_id"], name: "index_contracts_on_contracting_entity_id"
     t.index ["country_code"], name: "index_contracts_on_country_code"
@@ -45,6 +46,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_04_000000) do
     t.index ["data_source_id"], name: "index_contracts_on_data_source_id"
     t.index ["external_id", "country_code"], name: "index_contracts_on_external_id_and_country_code", unique: true
     t.index ["procedure_type"], name: "index_contracts_on_procedure_type"
+    t.index ["publication_date"], name: "index_contracts_on_publication_date"
+    t.index ["total_effective_price"], name: "index_contracts_on_total_effective_price"
   end
 
   create_table "data_sources", force: :cascade do |t|
@@ -73,6 +76,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_04_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "country_code", default: "PT", null: false
+    t.index ["is_company"], name: "index_entities_on_is_company"
+    t.index ["is_public_body"], name: "index_entities_on_is_public_body"
     t.index ["tax_identifier", "country_code"], name: "index_entities_on_tax_identifier_and_country_code", unique: true
   end
 

@@ -42,10 +42,11 @@ class ContractsController < ApplicationController
     @contracts    = scope.order(celebration_date: :desc, id: :desc)
                          .limit(PER_PAGE).offset((@page - 1) * PER_PAGE)
 
-    @procedure_types = Contract.distinct.pluck(:procedure_type).compact.sort
-    @countries       = Contract.distinct.pluck(:country_code).compact.sort
-    @flag_types      = Flag.distinct.order(:flag_type).pluck(:flag_type)
-    @source_options  = DataSource.order(:name).pluck(:id, :name)
+    # Cache these filter-dropdown values — they change only on import runs
+    @procedure_types = Rails.cache.fetch("contracts/procedure_types", expires_in: 10.minutes) { Contract.distinct.pluck(:procedure_type).compact.sort }
+    @countries       = Rails.cache.fetch("contracts/countries",       expires_in: 10.minutes) { Contract.distinct.pluck(:country_code).compact.sort }
+    @flag_types      = Rails.cache.fetch("contracts/flag_types",      expires_in: 10.minutes) { Flag.distinct.order(:flag_type).pluck(:flag_type) }
+    @source_options  = Rails.cache.fetch("contracts/source_options",  expires_in: 10.minutes) { DataSource.order(:name).pluck(:id, :name) }
   end
 
   def show
