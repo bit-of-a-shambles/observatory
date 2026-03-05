@@ -60,6 +60,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
       object: "Contrato com anomalia temporal",
       flag_type: "A2_PUBLICATION_AFTER_CELEBRATION"
     )
+    Flags::AggregateStatsService.new.call
 
     get dashboard_index_url
     assert_response :success
@@ -90,6 +91,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
       contracting_entity: public_b,
       winners: [ company_b ]
     )
+    Flags::AggregateStatsService.new.call
 
     get dashboard_index_url
     assert_response :success
@@ -124,6 +126,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
       base_price: 2100,
       contracting_entity: beta
     )
+    Flags::AggregateStatsService.new.call
 
     get dashboard_index_url, params: {
       entity_flag_type: "A2_PUBLICATION_AFTER_CELEBRATION",
@@ -200,6 +203,7 @@ class DashboardControllerTest < ActionDispatch::IntegrationTest
       score: 30,
       fired_at: Time.current
     )
+    Flags::AggregateStatsService.new.call
 
     get dashboard_index_url, params: { severity: "high" }
     assert_response :success

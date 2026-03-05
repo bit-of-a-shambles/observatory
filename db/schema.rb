@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_05_202232) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_05_203310) do
   create_table "contract_winners", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.integer "entity_id", null: false
@@ -82,6 +82,33 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_05_202232) do
     t.index ["tax_identifier", "country_code"], name: "index_entities_on_tax_identifier_and_country_code", unique: true
   end
 
+  create_table "flag_entity_stats", force: :cascade do |t|
+    t.integer "entity_id", null: false
+    t.string "flag_type", null: false
+    t.string "severity", null: false
+    t.decimal "total_exposure", precision: 15, scale: 2, default: "0.0", null: false
+    t.integer "contract_count", default: 0, null: false
+    t.datetime "computed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["entity_id", "flag_type", "severity"], name: "index_flag_entity_stats_unique", unique: true
+    t.index ["entity_id"], name: "index_flag_entity_stats_on_entity_id"
+    t.index ["severity", "contract_count"], name: "index_flag_entity_stats_sev_count"
+    t.index ["severity", "total_exposure"], name: "index_flag_entity_stats_sev_exposure"
+  end
+
+  create_table "flag_summary_stats", force: :cascade do |t|
+    t.string "severity"
+    t.decimal "total_exposure", precision: 15, scale: 2, default: "0.0", null: false
+    t.integer "flagged_contract_count", default: 0, null: false
+    t.integer "flagged_companies_count", default: 0, null: false
+    t.integer "flagged_public_entities_count", default: 0, null: false
+    t.datetime "computed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["severity"], name: "index_flag_summary_stats_on_severity", unique: true
+  end
+
   create_table "flags", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.string "flag_type", null: false
@@ -102,5 +129,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_05_202232) do
   add_foreign_key "contract_winners", "entities"
   add_foreign_key "contracts", "data_sources"
   add_foreign_key "contracts", "entities", column: "contracting_entity_id"
+  add_foreign_key "flag_entity_stats", "entities"
   add_foreign_key "flags", "contracts"
 end

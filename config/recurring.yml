@@ -15,5 +15,5 @@ production:
     schedule: every hour at minute 12
   warm_dashboard_cache:
     class: DashboardStatsJob
-    schedule: every 5 minutes
+    schedule: every hour
     queue: default

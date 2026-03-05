@@ -23,19 +23,15 @@ class DashboardStatsJobTest < ActiveJob::TestCase
     assert_not_nil Rails.cache.read("dashboard/all_sources"),        "all_sources should be cached"
   end
 
-  test "perform writes default aggregates cache key" do
+  test "perform writes per-severity flags_count cache keys" do
     DashboardStatsJob.new.perform
 
-    aggregates = Rails.cache.read("dashboard/aggregates/sev:/ft:/sort:value")
-    assert_not_nil aggregates, "default aggregates should be cached"
-    assert aggregates.key?(:flags_count)
-    assert aggregates.key?(:flags_by_type)
-    assert aggregates.key?(:flagged_total_exposure)
-    assert aggregates.key?(:flagged_contract_count)
-    assert aggregates.key?(:flagged_companies_count)
-    assert aggregates.key?(:flagged_public_entities_count)
-    assert aggregates.key?(:exposure_rows)
-    assert_kind_of Array, aggregates[:exposure_rows]
+    [ nil, "high", "medium", "low" ].each do |sev|
+      assert_not_nil Rails.cache.read("dashboard/flags_count/sev:#{sev}"),
+                     "flags_count for sev:#{sev.inspect} should be cached"
+      assert_not_nil Rails.cache.read("dashboard/flags_by_type/sev:#{sev}"),
+                     "flags_by_type for sev:#{sev.inspect} should be cached"
+    end
   end
 
   test "perform caches correct contract count" do
@@ -44,8 +40,7 @@ class DashboardStatsJobTest < ActiveJob::TestCase
     assert_equal Contract.count, Rails.cache.read("dashboard/contract_count")
   end
 
-  test "perform caches flagged aggregates matching live queries" do
-    # Create a flagged contract so aggregates are non-trivial
+  test "perform caches correct flags_count matching live query" do
     entity = entities(:one)
     contract = Contract.create!(
       external_id: "job-test-agg-1", country_code: "PT",
@@ -63,9 +58,9 @@ class DashboardStatsJobTest < ActiveJob::TestCase
 
     DashboardStatsJob.new.perform
 
-    aggregates = Rails.cache.read("dashboard/aggregates/sev:/ft:/sort:value")
-    assert aggregates[:flags_count] >= 1
-    assert aggregates[:flagged_contract_count] >= 1
+    assert_equal Flag.count, Rails.cache.read("dashboard/flags_count/sev:")
+    assert_equal Flag.where(severity: "high").count,
+                 Rails.cache.read("dashboard/flags_count/sev:high")
   end
 
   test "perform caches all_sources as array of plain hashes" do
