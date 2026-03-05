@@ -34,28 +34,34 @@ class DashboardController < ApplicationController
     filter_key = "sev:#{@severity_filter}/ft:#{@entity_flag_type}/sort:#{@entity_sort}"
 
     aggregates = Rails.cache.fetch("dashboard/aggregates/#{filter_key}", expires_in: STATS_CACHE_TTL) do
-      flags_scope      = @severity_filter ? Flag.where(severity: @severity_filter) : Flag
+      flags_scope      = @severity_filter ? Flag.where(severity: @severity_filter) : Flag.all
       flagged_subquery = flags_scope.select(:contract_id).distinct
 
       flags_count   = flags_scope.count
       flags_by_type = flags_scope.group(:flag_type).order(:flag_type).count
 
+      # JOIN-based aggregates — avoid IN (subquery) against multi-million-row
+      # tables (contract_winners has 1.9M rows) which causes full table scans.
+      # flags → 37K rows; subquery on flags table is fine.
       flagged_total_exposure = Contract.where(id: flagged_subquery).sum(:base_price)
+
       flagged_contract_count = flagged_subquery.count
 
+      # JOIN through contract_winners: Entity → contract_winners → contract → flags
       flagged_companies_count = Entity
-        .joins(:contract_winners)
-        .where(contract_winners: { contract_id: flagged_subquery })
+        .joins(contract_winners: { contract: :flags })
+        .merge(flags_scope)
         .where(is_company: true)
         .distinct
         .count
 
-      flagged_public_entities_count = Contract
-        .where(id: flagged_subquery)
-        .joins(:contracting_entity)
-        .where(entities: { is_public_body: true })
+      # JOIN through contracting: Entity → contracts_as_contracting_entity → flags
+      flagged_public_entities_count = Entity
+        .joins(contracts_as_contracting_entity: :flags)
+        .merge(flags_scope)
+        .where(is_public_body: true)
         .distinct
-        .count(:contracting_entity_id)
+        .count
 
       # Materialise the exposure rows into plain hashes so they survive Marshal
       # serialisation into Solid Cache (AR result objects cannot be marshalled).
