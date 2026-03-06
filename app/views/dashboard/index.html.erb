@@ -156,7 +156,7 @@
                 </div>
                 <div class="divide-y divide-white/5">
                   <% @entity_exposure_rows.each do |row| %>
-                    <%= link_to entity_path(row[:entity_id]), class: "grid grid-cols-[160px_1fr_160px_120px] gap-3 py-2.5 font-mono text-xs hover:bg-white/[0.02] transition-colors rounded" do %>
+                    <%= link_to entity_path(row[:entity_id]), class: "grid grid-cols-[160px_1fr_160px_120px] gap-3 py-2.5 font-mono text-xs hover:bg-white/[0.02] transition-colors rounded", data: { turbo_frame: "_top" } do %>
                       <span class="text-[#c8a84e]"><%= flag_type_label(row[:flag_type]) %></span>
                       <span class="text-white/75 truncate"><%= row[:entity_name] %></span>
                       <span class="text-right text-white/65"><%= number_to_currency(row[:exposure_value], unit: "€", delimiter: ",", separator: ".", format: "%u%n", precision: 2) %></span>
