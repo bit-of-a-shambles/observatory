@@ -96,4 +96,73 @@ class Flags::Actions::DateSequenceAnomalyActionTest < ActiveSupport::TestCase
     assert Flag.exists?(contract_id: anomalous.id, flag_type: "A2_PUBLICATION_AFTER_CELEBRATION")
     assert_not Flag.exists?(contract_id: normal.id, flag_type: "A2_PUBLICATION_AFTER_CELEBRATION")
   end
+
+  test "does not fire when celebration_date equals publication_date (same day)" do
+    create_contract(
+      external_id: "rule-a2-same-day",
+      publication_date: Date.new(2025, 6, 1),
+      celebration_date: Date.new(2025, 6, 1)
+    )
+
+    assert_no_difference "Flag.count" do
+      result = Flags::Actions::DateSequenceAnomalyAction.new.call
+      assert_equal 0, result
+    end
+  end
+
+  test "does not fire when celebration_date is after publication_date (normal order)" do
+    create_contract(
+      external_id: "rule-a2-normal",
+      publication_date: Date.new(2025, 6, 1),
+      celebration_date: Date.new(2025, 6, 5)
+    )
+
+    assert_no_difference "Flag.count" do
+      result = Flags::Actions::DateSequenceAnomalyAction.new.call
+      assert_equal 0, result
+    end
+  end
+
+  test "does not fire when publication_date is nil" do
+    create_contract(
+      external_id: "rule-a2-nil-pub",
+      publication_date: nil,
+      celebration_date: Date.new(2025, 6, 1)
+    )
+
+    assert_no_difference "Flag.count" do
+      result = Flags::Actions::DateSequenceAnomalyAction.new.call
+      assert_equal 0, result
+    end
+  end
+
+  test "does not fire when celebration_date is nil" do
+    create_contract(
+      external_id: "rule-a2-nil-cel",
+      publication_date: Date.new(2025, 6, 1),
+      celebration_date: nil
+    )
+
+    assert_no_difference "Flag.count" do
+      result = Flags::Actions::DateSequenceAnomalyAction.new.call
+      assert_equal 0, result
+    end
+  end
+
+  test "fires when celebration is exactly 1 day before publication" do
+    anomalous = create_contract(
+      external_id: "rule-a2-one-day",
+      publication_date: Date.new(2026, 2, 28),
+      celebration_date: Date.new(2026, 2, 27)
+    )
+
+    assert_difference "Flag.count", 1 do
+      result = Flags::Actions::DateSequenceAnomalyAction.new.call
+      assert_equal 1, result
+    end
+
+    flag = Flag.find_by!(contract_id: anomalous.id, flag_type: "A2_PUBLICATION_AFTER_CELEBRATION")
+    assert_equal "2026-02-28", flag.details["publication_date"]
+    assert_equal "2026-02-27", flag.details["celebration_date"]
+  end
 end

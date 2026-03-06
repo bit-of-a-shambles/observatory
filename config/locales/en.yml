@@ -156,6 +156,8 @@ en:
       all_flags: "All flags"
       filter: "Filter"
       clear: "Clear"
+      date_from: "Published from"
+      date_to: "to"
       col_contract: "Contract"
       col_entity: "Contracting Entity"
       col_procedure: "Procedure"

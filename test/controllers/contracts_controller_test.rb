@@ -179,4 +179,24 @@ class ContractsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_not_includes response.body, I18n.t("contracts.show.flags.heading")
   end
+
+  test "index filters by date_from (publication_date >=)" do
+    contracts(:one).update!(publication_date: Date.new(2025, 6, 1))
+    contracts(:two).update!(publication_date: Date.new(2025, 1, 1))
+
+    get contracts_url(date_from: "2025-06-01")
+    assert_response :success
+    assert_includes response.body, contracts(:one).object
+    assert_not_includes response.body, contracts(:two).object
+  end
+
+  test "index filters by date_to (publication_date <=)" do
+    contracts(:one).update!(publication_date: Date.new(2025, 6, 1))
+    contracts(:two).update!(publication_date: Date.new(2025, 1, 1))
+
+    get contracts_url(date_to: "2025-01-31")
+    assert_response :success
+    assert_not_includes response.body, contracts(:one).object
+    assert_includes response.body, contracts(:two).object
+  end
 end

@@ -99,4 +99,24 @@ class EntitiesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, contracts(:one).object
     assert_not_includes response.body, contracts(:two).object
   end
+
+  test "show filters contracts by date_from" do
+    contracts(:one).update!(publication_date: Date.new(2025, 6, 1))
+    contracts(:two).update!(publication_date: Date.new(2025, 1, 1))
+
+    get entity_url(entities(:one), date_from: "2025-06-01"), headers: { "Turbo-Frame" => "entity-contracts" }
+    assert_response :success
+    assert_includes response.body, contracts(:one).object
+    assert_not_includes response.body, contracts(:two).object
+  end
+
+  test "show filters contracts by date_to" do
+    contracts(:one).update!(publication_date: Date.new(2025, 6, 1))
+    contracts(:two).update!(publication_date: Date.new(2025, 1, 1))
+
+    get entity_url(entities(:one), date_to: "2025-01-31"), headers: { "Turbo-Frame" => "entity-contracts" }
+    assert_response :success
+    assert_not_includes response.body, contracts(:one).object
+    assert_includes response.body, contracts(:two).object
+  end
 end

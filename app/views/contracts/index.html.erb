@@ -68,9 +68,17 @@
           { selected: params[:flag_type] },
           class: "bg-white/[0.04] border border-white/[0.1] rounded px-3 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
     </div>
+    <div class="flex items-center gap-1.5">
+      <label class="font-mono text-[10px] text-white/35 shrink-0"><%= t("contracts.index.date_from") %></label>
+      <%= f.date_field :date_from, value: params[:date_from],
+          class: "bg-white/[0.04] border border-white/[0.1] rounded px-2 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
+      <label class="font-mono text-[10px] text-white/35 shrink-0"><%= t("contracts.index.date_to") %></label>
+      <%= f.date_field :date_to, value: params[:date_to],
+          class: "bg-white/[0.04] border border-white/[0.1] rounded px-2 py-2 font-mono text-xs text-[#e8e0d4] focus:outline-none focus:border-[#c8a84e55] transition-all" %>
+    </div>
     <%= f.submit t("contracts.index.filter"),
         class: "bg-[#c8a84e1a] border border-[#c8a84e44] text-[#c8a84e] font-mono text-xs tracking-widest px-4 py-2 rounded hover:bg-[#c8a84e33] transition-all cursor-pointer" %>
-    <% if params[:q].present? || params[:procedure_type].present? || params[:country].present? || params[:flagged].present? || params[:flag_type].present? || @selected_source_ids.any? %>
+    <% if params[:q].present? || params[:procedure_type].present? || params[:country].present? || params[:flagged].present? || params[:flag_type].present? || @selected_source_ids.any? || params[:date_from].present? || params[:date_to].present? %>
       <%= link_to t("contracts.index.clear"), contracts_path,
           class: "border border-white/10 text-white/30 font-mono text-xs tracking-widest px-4 py-2 rounded hover:text-white/50 transition-all" %>
     <% end %>

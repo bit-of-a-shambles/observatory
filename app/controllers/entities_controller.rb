@@ -53,6 +53,17 @@ class EntitiesController < ApplicationController
       base_scope = base_scope.joins(:flags).where(flags: { flag_type: @flag_filter }).distinct
     end
 
+    @date_from = params[:date_from].presence
+    @date_to   = params[:date_to].presence
+
+    if @date_from.present?
+      base_scope = base_scope.where("publication_date >= ?", @date_from)
+    end
+
+    if @date_to.present?
+      base_scope = base_scope.where("publication_date <= ?", @date_to)
+    end
+
     @sort_col = SORT_COLS.include?(params[:sort]) ? params[:sort] : "celebration_date"
     @sort_dir = params[:dir] == "asc" ? "asc" : "desc"
 

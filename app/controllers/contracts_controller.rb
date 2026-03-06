@@ -45,6 +45,14 @@ class ContractsController < ApplicationController
       scope = scope.left_outer_joins(:flags).where(flags: { id: nil })
     end
 
+    if params[:date_from].present?
+      scope = scope.where("publication_date >= ?", params[:date_from])
+    end
+
+    if params[:date_to].present?
+      scope = scope.where("publication_date <= ?", params[:date_to])
+    end
+
     # Reuse the dashboard cached count for the "all contracts" total shown in
     # the subtitle — avoids an uncached SELECT COUNT(*) FROM contracts on every load.
     @all_count    = Rails.cache.fetch("dashboard/contract_count", expires_in: 10.minutes) { Contract.count }

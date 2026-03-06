@@ -151,6 +151,8 @@ pt:
       all_flags: "Todos os sinais"
       filter: "Filtrar"
       clear: "Limpar"
+      date_from: "Publicado de"
+      date_to: "até"
       col_contract: "Contrato"
       col_entity: "Entidade Adjudicante"
       col_procedure: "Procedimento"
