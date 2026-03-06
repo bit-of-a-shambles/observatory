@@ -10,6 +10,7 @@ module PublicContracts
       contracts = adapter.fetch_contracts
       contracts.each { |attrs| import_contract(attrs) }
       @ds.update!(status: :active, last_synced_at: Time.current, record_count: contracts.size)
+      Entities::UpdateStatsService.new.call
     rescue => e
       @ds.update!(status: :error)
       raise
@@ -60,6 +61,7 @@ module PublicContracts
 
       progress&.puts "\n  Done — #{imported} records"
       @ds.update!(status: :active, last_synced_at: Time.current, record_count: imported)
+      Entities::UpdateStatsService.new.call
     rescue => e
       @ds.update!(status: :error)
       raise
@@ -118,6 +120,7 @@ module PublicContracts
 
       progress&.puts "\n  Done — #{imported} imported, #{skipped} skipped"
       @ds.update!(status: :active, last_synced_at: Time.current, record_count: imported)
+      Entities::UpdateStatsService.new.call
     rescue => e
       @ds.update!(status: :error)
       raise

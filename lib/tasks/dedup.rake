@@ -228,5 +228,6 @@ namespace :dedup do
     puts "Flags dropped    : #{flags_dropped}  (flag_type already on winner)"
     puts "Winners merged   : #{winners_merged}"
     puts dry_run ? "==> DRY RUN complete — DB unchanged." : "==> Done."
+    Entities::UpdateStatsService.new.call unless dry_run
   end
 end

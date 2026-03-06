@@ -21,11 +21,9 @@ class EntitiesController < ApplicationController
     @page        = [ params[:page].to_i, 1 ].max
     @total_pages = [ (@total.to_f / PER_PAGE).ceil, 1 ].max
 
+    # Use pre-computed columns — avoids a GROUP BY + SUM over 2M+ contracts.
     @entities = base
-      .left_outer_joins(:contracts_as_contracting_entity)
-      .select("entities.*, COUNT(contracts.id) AS contract_count, SUM(contracts.base_price) AS total_value")
-      .group("entities.id")
-      .order("contract_count DESC, entities.name ASC")
+      .order("contract_count DESC, name ASC")
       .limit(PER_PAGE)
       .offset((@page - 1) * PER_PAGE)
   end

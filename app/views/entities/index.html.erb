@@ -76,8 +76,8 @@
               <% end %>
             </div>
             <div class="hidden sm:block text-right font-mono text-xs text-white/50">
-              <% if entity.respond_to?(:total_value) && entity.total_value.to_f > 0 %>
-                €<%= number_with_delimiter(entity.total_value.to_i) %>
+              <% if entity.total_contracted_value.to_f > 0 %>
+                €<%= number_with_delimiter(entity.total_contracted_value.to_i) %>
               <% else %>
                 <span class="text-white/20">—</span>
               <% end %>

@@ -12,7 +12,9 @@ class ContractsController < ApplicationController
   }.freeze
 
   def index
-    scope = Contract.includes(:contracting_entity, :winners, :data_source, :flags)
+    # :winners and :data_source are only needed on the show page.
+    # Loading them for 50 list rows adds 2 unnecessary batch queries every request.
+    scope = Contract.includes(:contracting_entity, :flags)
     @selected_source_ids = Array(params[:source_ids]).reject(&:blank?).map(&:to_i).uniq
 
     # Require at least 3 characters to avoid leading-wildcard full-table scans

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_05_203310) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_06_102526) do
   create_table "contract_winners", force: :cascade do |t|
     t.integer "contract_id", null: false
     t.integer "entity_id", null: false
@@ -38,6 +38,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_05_203310) do
     t.datetime "updated_at", null: false
     t.string "country_code", default: "PT", null: false
     t.integer "data_source_id"
+    t.index ["base_price", "id"], name: "index_contracts_on_base_price_and_id"
     t.index ["base_price"], name: "index_contracts_on_base_price"
     t.index ["celebration_date", "id"], name: "index_contracts_on_celebration_date_and_id", order: :desc
     t.index ["celebration_date"], name: "index_contracts_on_celebration_date"
@@ -77,6 +78,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_05_203310) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "country_code", default: "PT", null: false
+    t.integer "contract_count", default: 0, null: false
+    t.decimal "total_contracted_value", precision: 15, scale: 2, default: "0.0", null: false
+    t.index ["contract_count"], name: "index_entities_on_contract_count"
     t.index ["is_company"], name: "index_entities_on_is_company"
     t.index ["is_public_body"], name: "index_entities_on_is_public_body"
     t.index ["tax_identifier", "country_code"], name: "index_entities_on_tax_identifier_and_country_code", unique: true
