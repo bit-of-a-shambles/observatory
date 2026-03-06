@@ -92,10 +92,10 @@ module Flags
         anomalous
       end
 
-      # Returns ONE representative contract per anomalous entity (the one with the
-      # highest base_price).  Benford's Law is a per-entity statistical test — there
-      # is no per-contract finding, so cascading a flag to every contract in the
-      # entity's portfolio produces false positives and inflates the flag count.
+      # Returns ONE representative contract per anomalous entity.
+      # Prefers the highest-priced *awarded* contract (celebration_date NOT NULL)
+      # so open tenders are not shown as the B5 representative.
+      # Falls back to highest base_price if no awarded contract exists.
       def fetch_contracts_for_entities(entity_ids)
         return [] if entity_ids.empty?
 
@@ -103,15 +103,15 @@ module Flags
         sql = <<~SQL
           SELECT c.id, c.contracting_entity_id, c.base_price
           FROM contracts c
-          INNER JOIN (
-            SELECT contracting_entity_id, MAX(base_price) AS max_price
-            FROM contracts
-            WHERE contracting_entity_id IN (#{safe_ids})
-              AND base_price >= 1
-            GROUP BY contracting_entity_id
-          ) best
-            ON  best.contracting_entity_id = c.contracting_entity_id
-            AND best.max_price             = c.base_price
+          WHERE c.contracting_entity_id IN (#{safe_ids})
+            AND c.base_price >= 1
+            AND c.id = (
+              SELECT c2.id FROM contracts c2
+              WHERE c2.contracting_entity_id = c.contracting_entity_id
+                AND c2.base_price >= 1
+              ORDER BY (c2.celebration_date IS NOT NULL) DESC, c2.base_price DESC
+              LIMIT 1
+            )
           GROUP BY c.contracting_entity_id
         SQL
 
