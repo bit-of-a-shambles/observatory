@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_06_120000) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_06_155344) do
   create_table "benford_analyses", force: :cascade do |t|
     t.integer "entity_id", null: false
     t.integer "representative_contract_id"
@@ -58,6 +58,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_06_120000) do
     t.index ["base_price"], name: "index_contracts_on_base_price"
     t.index ["celebration_date", "id"], name: "index_contracts_on_celebration_date_and_id", order: :desc
     t.index ["celebration_date"], name: "index_contracts_on_celebration_date"
+    t.index ["contracting_entity_id", "base_price", "id"], name: "idx_contracts_entity_base_price_id"
+    t.index ["contracting_entity_id", "celebration_date", "id"], name: "idx_contracts_entity_celebration_id"
+    t.index ["contracting_entity_id", "object", "id"], name: "idx_contracts_entity_object_id"
+    t.index ["contracting_entity_id", "publication_date", "id"], name: "idx_contracts_entity_publication_date_id"
     t.index ["contracting_entity_id"], name: "index_contracts_on_contracting_entity_id"
     t.index ["country_code"], name: "index_contracts_on_country_code"
     t.index ["cpv_code"], name: "index_contracts_on_cpv_code"
