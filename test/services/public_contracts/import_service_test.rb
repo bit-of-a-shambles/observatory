@@ -503,6 +503,30 @@ class PublicContracts::ImportServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "call_streaming upgrades entity flags on cache hit when same NIF appears as winner then as contracting entity" do
+    shared_nif = "599883001"
+    # Row 1: entity appears as a winner → is_company=true, is_public_body not set
+    row1 = build_contract_attrs(
+      "external_id" => "cache-upgrade-1",
+      "winners" => [{ "tax_identifier" => shared_nif, "name" => "Shared Public Entity", "is_company" => true }]
+    )
+    # Row 2: same NIF is now the contracting entity → is_public_body=true
+    row2 = build_contract_attrs(
+      "external_id" => "cache-upgrade-2",
+      "contracting_entity" => { "tax_identifier" => shared_nif, "name" => "Shared Public Entity", "is_public_body" => true },
+      "winners" => []
+    )
+    adapter = Object.new
+    adapter.define_singleton_method(:each_contract) { |&blk| [ row1, row2 ].each { |a| blk.call(a) } }
+    ds = data_sources(:portal_base)
+    ds.stub(:adapter, adapter) do
+      PublicContracts::ImportService.new(ds).call_streaming(progress: nil)
+    end
+    entity = Entity.find_by!(tax_identifier: shared_nif)
+    assert entity.is_company,     "is_company should be true after appearing as a winner"
+    assert entity.is_public_body, "is_public_body should be upgraded to true after cache-hit as contracting entity"
+  end
+
   test "call_streaming skips duplicate rows without crashing" do
     same_attrs = build_contract_attrs("external_id" => "dup-001")
     adapter = Object.new
