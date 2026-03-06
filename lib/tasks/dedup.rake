@@ -133,18 +133,21 @@ namespace :dedup do
   # modifications, award notices) all with distinct publication numbers but
   # representing the same physical tender.  Before the TED client was patched to
   # skip COR/can-modifies notices, they were imported as separate Contract rows.
+  # Additionally, multi-lot frameworks often generate one award notice per winner
+  # per lot — all sharing the same entity, title, and (optionally) base price.
   #
   # Strategy:
-  #   Group by (data_source_id, contracting_entity_id, base_price, cpv_code)
-  #   within the TED data source.  For each group with more than one contract,
-  #   keep the one with the lowest id (earliest imported ≈ original CN notice).
+  #   Group by (data_source_id, contracting_entity_id, object, COALESCE(base_price, '-'))
+  #   within the TED data source.  This handles both priced and null-price notice
+  #   clusters.  For each group with more than one contract, keep the one with the
+  #   lowest id (earliest imported ≈ original CN notice).
   #   Reassign flags & winners then delete the rest — identical logic to dedup:run.
   #
   # Usage:
   #   bundle exec rails dedup:ted_same_tender
   #   DRY_RUN=1 bundle exec rails dedup:ted_same_tender
   # ---------------------------------------------------------------------------
-  desc "Collapse within-source TED notice duplicates (corrigenda / modifications)"
+  desc "Collapse within-source TED notice duplicates (corrigenda / modifications + multi-lot award notices)"
   task ted_same_tender: :environment do
     dry_run = ENV["DRY_RUN"].present?
     puts dry_run ? "==> DRY RUN — no changes will be committed" : "==> Deduplicating within-source TED notices..."
@@ -158,15 +161,19 @@ namespace :dedup do
       next
     end
 
-    # Groups where the same entity+price+CPV appears more than once in TED
+    # Groups where the same entity+title+price appears more than once in TED.
+    # COALESCE(base_price, -1) ensures null-price records are grouped together
+    # by title; non-null prices are already distinct enough for dedup.
+    # Only consider contract rows with an object/title — titleless rows are rare
+    # and too ambiguous to merge safely.
     duplicate_groups = Contract
       .select(Arel.sql(
-        "data_source_id, contracting_entity_id, base_price, COALESCE(cpv_code, '') AS cpv_key, " \
-        "GROUP_CONCAT(id) AS contract_ids, COUNT(*) AS cnt"
+        "data_source_id, contracting_entity_id, COALESCE(CAST(base_price AS TEXT), '') AS price_key, " \
+        "object, GROUP_CONCAT(id) AS contract_ids, COUNT(*) AS cnt"
       ))
       .where(data_source_id: ted_source_ids)
-      .where.not(base_price: nil)
-      .group(Arel.sql("data_source_id, contracting_entity_id, base_price, COALESCE(cpv_code, '')"))
+      .where.not(object: [ nil, "" ])
+      .group(Arel.sql("data_source_id, contracting_entity_id, COALESCE(CAST(base_price AS TEXT), ''), object"))
       .having("COUNT(*) > 1")
 
     groups_processed  = 0
