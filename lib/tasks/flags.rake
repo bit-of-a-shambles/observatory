@@ -71,6 +71,8 @@ namespace :flags do
       # contracting entity.
       # -----------------------------------------------------------------------
       conn.execute("DELETE FROM flag_entity_stats")
+
+      # Standard flags — B5 Benford is handled separately below.
       conn.execute(<<~SQL)
         INSERT INTO flag_entity_stats
           (entity_id, flag_type, severity, total_exposure, contract_count,
@@ -84,7 +86,31 @@ namespace :flags do
           '#{now}', '#{now}', '#{now}'
         FROM (SELECT DISTINCT contract_id, flag_type, severity FROM flags) f
         JOIN contracts c ON c.id = f.contract_id
+        WHERE f.flag_type != 'B5_BENFORD_DEVIATION'
         GROUP BY c.contracting_entity_id, f.flag_type, f.severity
+      SQL
+
+      # B5 Benford: one representative contract is flagged per entity, but the
+      # meaningful metrics are the full entity distribution, not the single
+      # representative contract. Use benford_analyses.sample_size as count and
+      # entities.total_contracted_value as total_exposure.
+      conn.execute(<<~SQL)
+        INSERT INTO flag_entity_stats
+          (entity_id, flag_type, severity, total_exposure, contract_count,
+           computed_at, created_at, updated_at)
+        SELECT
+          ba.entity_id,
+          'B5_BENFORD_DEVIATION'                           AS flag_type,
+          f.severity,
+          COALESCE(e.total_contracted_value, 0)            AS total_exposure,
+          ba.sample_size                                   AS contract_count,
+          '#{now}', '#{now}', '#{now}'
+        FROM benford_analyses ba
+        JOIN flags f
+          ON f.contract_id = ba.representative_contract_id
+         AND f.flag_type   = 'B5_BENFORD_DEVIATION'
+        JOIN entities e ON e.id = ba.entity_id
+        WHERE ba.flagged = 1
       SQL
 
       entity_rows = conn.select_value("SELECT COUNT(*) FROM flag_entity_stats")
